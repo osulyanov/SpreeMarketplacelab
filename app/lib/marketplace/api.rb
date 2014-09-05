@@ -20,6 +20,11 @@ module Marketplace
       end
     end
 
+    def create_order(order_details)
+      marketplace_order_details = convert_to_marketplace_order(order_details)
+      post_api_response('/api/orders', '', marketplace_order_details)
+    end
+
     def notify(event_name, data)
       notify_listeners(event_name, data)
     end
@@ -45,6 +50,11 @@ module Marketplace
     end
 
     private
+      def convert_to_marketplace_order(spree_order)
+        # todo: write a conversion here
+        return spree_order
+      end
+
       def logger
         @logger ||= MarketplaceLogger.new
       end
