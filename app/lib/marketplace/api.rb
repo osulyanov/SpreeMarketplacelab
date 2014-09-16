@@ -8,8 +8,6 @@ module Marketplace
       @api_key = api_key
       @account_key = account_key
       @api_base_url = api_base_url
-
-      get_best_prices("WL-240")
     end
 
     def self.instance
