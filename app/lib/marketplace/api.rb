@@ -20,8 +20,16 @@ module Marketplace
       end
     end
 
+    def create_product(product)
+
+    end
+
+    def update_product(product)
+
+    end
+
     def get_best_prices(product_ids)
-      get_api_response("/api/listings/new/#{product_ids}/bestprices")
+      get_api_response("/api/products/#{product_ids}/listings?condition=new&view=bestprices")
     end
 
     def create_order(order_details)
