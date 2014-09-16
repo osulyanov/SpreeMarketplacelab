@@ -8,6 +8,8 @@ module Marketplace
       @api_key = api_key
       @account_key = account_key
       @api_base_url = api_base_url
+
+      get_best_prices("WL-240")
     end
 
     def self.instance
@@ -18,6 +20,10 @@ module Marketplace
 
         self.new(api_key, account_key, api_base_url)
       end
+    end
+
+    def get_best_prices(product_ids)
+      get_api_response("/api/listings/new/#{product_ids}/bestprices")
     end
 
     def create_order(order_details)
@@ -83,14 +89,16 @@ module Marketplace
         return (response.code >= 200 || response.code < 300)
       end
 
-      def get_api_response(endpoint_url, params = '')
-        url = "#{@api_base_url}#{endpoint_url}?#{params}&apikey=#{@api_key}&accountkey=#{@account_key}"
+      def get_api_response(endpoint_url, params = '', hash_result = false)
+        separator = endpoint_url.index("?") == nil ? "?" : "&";
+
+        url = "#{@api_base_url}#{endpoint_url}#{separator}#{params}&apikey=#{@api_key}&accountkey=#{@account_key}"
         logger.info "Marketplace GET #{url}"
 
         response = ::HTTParty.get(url, verify: false)
         logger.info "Marketplace GET response code=#{response.code} content-length=#{response.headers['content-length']}"
 
-        return convert_array_to_ruby_style(response) if response && response.code == 200
+        return (hash_result ? convert_hash_to_ruby_style(response) : convert_array_to_ruby_style(response)) if response && response.code == 200
       end
 
       def convert_array_to_ruby_style(camel_case_arr)
