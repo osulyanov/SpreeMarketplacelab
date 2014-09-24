@@ -8,6 +8,9 @@ module Marketplace
       @api_key = api_key
       @account_key = account_key
       @api_base_url = api_base_url
+
+      # listings = get_listings("WL-240")
+      # create_order("")
     end
 
     def self.instance
@@ -18,6 +21,15 @@ module Marketplace
 
         self.new(api_key, account_key, api_base_url)
       end
+    end
+
+    def create_listing(spree_listing)
+      listing_model = {
+
+      }.to_json
+
+      # seller id is hardcoded to the Marketplace Lab seller
+      post_api_response('/api/listings/seller/77380F1F-D6C8-4022-924E-17BC1218A992', '', marketplace_order_details)
     end
 
     def create_product(product)
@@ -34,7 +46,7 @@ module Marketplace
 
     def create_order(order_details)
       marketplace_order_details = convert_to_marketplace_order(order_details)
-      post_api_response('/api/orders', '', marketplace_order_details)
+      post_api_response('/api/orders/create', '', marketplace_order_details)
     end
 
     def notify(event_name, data)
@@ -64,7 +76,30 @@ module Marketplace
     private
       def convert_to_marketplace_order(spree_order)
         # todo: write a conversion here
-        return spree_order
+        return {
+          StoreOrderId: "123",
+          SellerOrderId: "123",
+          CustomerEmail: "qwe@qwe.ru",
+          CustomerTitle: "Customer Title",
+          CustomerFirstName: "First",
+          CustomerLastName: "Last",
+          StoreOrderDate: "2014-09-23 09:50:00",
+
+          OrderItems: [{
+            ListingId: 6,
+            PaymentStatus: 30,
+            ShippingStatus: 30,
+            Quantity: 2,
+            Price: 5.5,
+            StoreOrderItemId: "WL-240-1",
+            StoreProductId: "WL-240",
+            SellerId: "77380F1F-D6C8-4022-924E-17BC1218A992",
+            ListingDispatchFromCountryId: 235,
+            ListingConditionId: 1,
+            ListingSubConditionId: 1,
+            CurrencyType: 826
+          }]
+        }.to_json
       end
 
       def logger
