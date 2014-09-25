@@ -23,15 +23,15 @@ module Marketplace
       end
     end
 
-    def create_listing(spree_product, spree_user)
+    def create_listing(spree_product, spree_user, sub_condition)
       listing_model = {
         SKU: spree_product.sku,
         StoreProductId: spree_product.sku,
         Upc: spree_product.sku,
         Title: spree_product.name,
         ItemNote: spree_product.description,
-        Condition: "New", # New
-        SubCondition: "LikeNew", # Like New
+        Condition: "Used",
+        SubCondition: sub_condition,
         DispatchedFrom: "GB",
         DispatchedTo: "UK",
         QuantityAvailable: 1,
@@ -68,6 +68,7 @@ module Marketplace
           }
         ],
         StoreCustomerId: spree_user.email,
+        Comment: "From Furniture"
       }.to_json
 
       post_api_response("/api/listings/selleremail", "sellerEmail=#{spree_user.email}", listing_model)
