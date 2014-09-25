@@ -23,6 +23,19 @@ module Marketplace
       end
     end
 
+    def dispatch_order(store_order_id)
+      dispatch_model = {
+        StoreOrderId: store_order_id,
+        DispatchDate: Time.now.strftime("%Y-%m-%d %H:%M")
+      }.to_json
+
+      post_api_response("/api/orders/#{store_order_id}/dispatch", "", dispatch_model)
+    end
+
+    def get_dispatch_status(store_product_id)
+      get_api_response("/api/orders/dispatchstatus", "storeProductId=#{store_product_id}", true)
+    end
+
     def create_listing(spree_product, spree_user, sub_condition)
       listing_model = {
         SKU: spree_product.sku,
