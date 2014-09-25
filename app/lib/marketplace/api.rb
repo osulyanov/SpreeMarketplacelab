@@ -23,13 +23,54 @@ module Marketplace
       end
     end
 
-    def create_listing(spree_listing)
+    def create_listing(spree_product, spree_user)
       listing_model = {
-
+        SKU: spree_product.sku,
+        StoreProductId: spree_product.sku,
+        Upc: spree_product.sku,
+        Title: spree_product.name,
+        ItemNote: spree_product.description,
+        Condition: "New", # New
+        SubCondition: "LikeNew", # Like New
+        DispatchedFrom: "GB",
+        DispatchedTo: "UK",
+        QuantityAvailable: 1,
+        ListingPrices: [
+          {
+            Amount: spree_product.price,
+            CurrencyType: "GBP",
+            ListingPriceId: 3 # AskingPrice
+          },
+          {
+              Amount: spree_product.retail_price,
+              CurrencyType: "GBP",
+              ListingPriceId: 4 # RetailPrice
+          },
+          {
+              Amount: spree_product.best_offer_price,
+              CurrencyType: "GBP",
+              ListingPriceId: 5 # BestOfferPrice
+          }
+        ],
+        DeliveryPrices: nil,
+        ProductIdType: "UPC",
+        CustomAttributes: {
+          Width: spree_product.width.to_s,
+          Height: spree_product.height.to_s,
+          Depth: spree_product.depth.to_s,
+          Weight: spree_product.weight.to_s,
+        },
+        Category: spree_product.major_category,
+        Images: [
+          {
+            ImageUrl: spree_product.images[0].attachment.url,
+            ImageType: "Large"
+          }
+        ],
+        StoreCustomerId: spree_user.email,
       }.to_json
 
-      # seller id is hardcoded to the Marketplace Lab seller
-      post_api_response('/api/listings/seller/77380F1F-D6C8-4022-924E-17BC1218A992', '', marketplace_order_details)
+      post_api_response("/api/listings/selleremail", "sellerEmail=#{spree_user.email}", listing_model)
     end
 
     def create_product(product)
