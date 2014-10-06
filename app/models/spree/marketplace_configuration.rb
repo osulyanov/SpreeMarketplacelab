@@ -4,5 +4,6 @@ module Spree
     preference :apiKey, :string
     preference :accountKey, :string
     preference :apiBaseUrl, :string
+    preference :markOrderAsAwaitingDispatchOnCreate, :boolean, default: true
   end
 end

@@ -8,9 +8,6 @@ module Marketplace
       @api_key = api_key
       @account_key = account_key
       @api_base_url = api_base_url
-
-      # listings = get_listings("WL-240")
-      # create_order("")
     end
 
     def self.instance
@@ -87,11 +84,21 @@ module Marketplace
       post_api_response("/api/listings/selleremail", "sellerEmail=#{spree_user.email}", listing_model)
     end
 
-    def create_product(product)
+    def create_product(spree_product)
+      marketplace_product_json = {
+          UPC: spree_product.sku,
+          StoreProductId: spree_product.sku,
+          Title: spree_product.name,
+          Price: {
+              Currency: "GBP",
+              Amount: spree_product.price
+          }
+      }.to_json
 
+      post_api_response('/api/products', '', marketplace_product_json)
     end
 
-    def update_product(product)
+    def update_product(spree_product)
 
     end
 
@@ -99,9 +106,9 @@ module Marketplace
       get_api_response("/api/products/#{product_ids}/listings?condition=new&view=bestprices")
     end
 
-    def create_order(order_details)
-      marketplace_order_details = convert_to_marketplace_order(order_details)
-      post_api_response('/api/orders/create', '', marketplace_order_details)
+    def create_order(spree_order)
+      marketplace_order_json = convert_to_marketplace_order(spree_order)
+      post_api_response('/api/orders/create', '', marketplace_order_json)
     end
 
     def notify(event_name, data)
@@ -131,30 +138,52 @@ module Marketplace
     private
       def convert_to_marketplace_order(spree_order)
         # todo: write a conversion here
-        return {
-          StoreOrderId: "123",
-          SellerOrderId: "123",
-          CustomerEmail: "qwe@qwe.ru",
-          CustomerTitle: "Customer Title",
-          CustomerFirstName: "First",
-          CustomerLastName: "Last",
-          StoreOrderDate: "2014-09-23 09:50:00",
+        order_dto = {
+            StoreOrderId: spree_order.number,
+            SellerOrderId: spree_order.number,
+            CustomerEmail: spree_order.email,
+            CustomerTitle: "",
+            CustomerFirstName: "First",
+            CustomerLastName: "Last",
+            StoreOrderDate: spree_order.created_at,
 
-          OrderItems: [{
-            ListingId: 6,
-            PaymentStatus: 30,
-            ShippingStatus: 30,
-            Quantity: 2,
-            Price: 5.5,
-            StoreOrderItemId: "WL-240-1",
-            StoreProductId: "WL-240",
-            SellerId: "77380F1F-D6C8-4022-924E-17BC1218A992",
-            ListingDispatchFromCountryId: 235,
-            ListingConditionId: 1,
-            ListingSubConditionId: 1,
-            CurrencyType: 826
-          }]
-        }.to_json
+            # OrderItems: [{
+            #                  ListingId: 6,
+            #                  PaymentStatus: 30,
+            #                  ShippingStatus: 30,
+            #                  Quantity: 2,
+            #                  Price: 5.5,
+            #                  StoreOrderItemId: "WL-240-1",
+            #                  StoreProductId: "WL-240",
+            #                  SellerId: "77380F1F-D6C8-4022-924E-17BC1218A992",
+            #                  ListingDispatchFromCountryId: 235,
+            #                  ListingConditionId: 1,
+            #                  ListingSubConditionId: 1,
+            #                  CurrencyType: 826
+            #              }]
+        }
+
+        order_dto[:OrderItems] = []
+
+        spree_order.line_items.each { |item|
+          order_dto[:OrderItems].push({
+                                          ListingId: 6,
+                                          PaymentStatus: 30,
+                                          ShippingStatus: 30,
+                                          Quantity: item.quantity,
+                                          Price: item.price,
+                                          StoreOrderItemId: spree_order.number + "-" + item.id,
+                                          StoreProductId: item.variant.sku,
+                                          SellerId: "77380F1F-D6C8-4022-924E-17BC1218A992",
+                                          ListingDispatchFromCountryId: 235,
+                                          ListingConditionId: 1,
+                                          ListingSubConditionId: 1,
+                                          CurrencyType: 826
+                                      })
+        }
+
+
+        return order_dto.to_json
       end
 
       def logger
