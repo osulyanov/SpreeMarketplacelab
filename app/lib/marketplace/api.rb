@@ -137,7 +137,6 @@ module Marketplace
 
     private
       def convert_to_marketplace_order(spree_order)
-        # todo: write a conversion here
         order_dto = {
             StoreOrderId: spree_order.number,
             SellerOrderId: spree_order.number,
@@ -146,35 +145,21 @@ module Marketplace
             CustomerFirstName: "First",
             CustomerLastName: "Last",
             StoreOrderDate: spree_order.created_at,
-
-            # OrderItems: [{
-            #                  ListingId: 6,
-            #                  PaymentStatus: 30,
-            #                  ShippingStatus: 30,
-            #                  Quantity: 2,
-            #                  Price: 5.5,
-            #                  StoreOrderItemId: "WL-240-1",
-            #                  StoreProductId: "WL-240",
-            #                  SellerId: "77380F1F-D6C8-4022-924E-17BC1218A992",
-            #                  ListingDispatchFromCountryId: 235,
-            #                  ListingConditionId: 1,
-            #                  ListingSubConditionId: 1,
-            #                  CurrencyType: 826
-            #              }]
         }
 
         order_dto[:OrderItems] = []
 
         spree_order.line_items.each { |item|
+          listing = item.listing
           order_dto[:OrderItems].push({
-                                          ListingId: 6,
+                                          ListingId: listing[:id],
                                           PaymentStatus: 30,
                                           ShippingStatus: 30,
                                           Quantity: item.quantity,
                                           Price: item.price,
-                                          StoreOrderItemId: spree_order.number + "-" + item.id,
+                                          StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
                                           StoreProductId: item.variant.sku,
-                                          SellerId: "77380F1F-D6C8-4022-924E-17BC1218A992",
+                                          SellerId: listing[:seller_id],
                                           ListingDispatchFromCountryId: 235,
                                           ListingConditionId: 1,
                                           ListingSubConditionId: 1,
