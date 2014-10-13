@@ -108,7 +108,15 @@ module Marketplace
 
     def create_order(spree_order)
       marketplace_order_json = convert_to_marketplace_order(spree_order)
-      post_api_response('/api/orders/create', '', marketplace_order_json)
+      if (post_api_response('/api/orders/create', '', marketplace_order_json))
+        marketplace_order_adjustment = convert_to_order_adjustment(spree_order, 'AwaitingDispatch')
+        post_api_response('/api/orders/' + spree_order.number + '/adjustment', '', marketplace_order_adjustment)
+      end
+    end
+
+    def cancel_order(spree_order)
+      marketplace_order_adjustment = convert_to_order_adjustment(spree_order, 'Cancelled')
+      post_api_response('/api/' + spree_order.number + '/adjustment', '', marketplace_order_adjustment)
     end
 
     def notify(event_name, data)
@@ -136,6 +144,25 @@ module Marketplace
     end
 
     private
+      def convert_to_order_adjustment(spree_order, adjustment_type)
+        adjustment_dto = {
+            CustomerEmail: spree_order.email,
+            StoreOrderId: spree_order.number,
+        }
+
+        adjustment_dto[:Adjustments] = []
+        spree_order.line_items.each { |item|
+          adjustment_dto[:Adjustments].push({
+                                                StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
+                                                Quantity: item.quantity,
+                                                Price: item.price,
+                                                AdjustmentType: adjustment_type
+                                            })
+        }
+
+        return adjustment_dto.to_json
+      end
+
       def convert_to_marketplace_order(spree_order)
         order_dto = {
             StoreOrderId: spree_order.number,
@@ -153,8 +180,8 @@ module Marketplace
           listing = item.listing
           order_dto[:OrderItems].push({
                                           ListingId: listing[:id],
-                                          PaymentStatus: 30,
-                                          ShippingStatus: 30,
+                                          PaymentStatus: 30, # Paid
+                                          ShippingStatus: 10, # Pending
                                           Quantity: item.quantity,
                                           Price: item.price,
                                           StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
