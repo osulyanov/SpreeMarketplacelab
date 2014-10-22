@@ -99,7 +99,7 @@ module Marketplace
     end
 
     def update_product(spree_product)
-
+      create_product(spree_product)
     end
 
     def get_best_prices(product_ids)
@@ -141,6 +141,10 @@ module Marketplace
 
     def subscribe_to_webhooks
       subscribe_to :listing_created
+      subscribe_to :product_created
+      subscribe_to :product_updated
+      subscribe_to :order_allocated
+      subscribe_to :order_dispatched
     end
 
     private
@@ -203,17 +207,47 @@ module Marketplace
       end
 
       def subscribe_to(subscription_type)
-        int_subscription_type = case subscription_type
-          when :listing_created then 6
-          else 0
+        if subscription_type == :listing_created then
+          payload = {
+              HookSubscriptionType: 6,
+              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/listing'
+          }.to_json
+          api_hooks_url = '/api/hooks'
         end
 
-        json = {
-          HookSubscriptionType: int_subscription_type,
-          TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/listing'
-        }.to_json
+        if subscription_type == :product_created then
+          payload = {
+              HookSubscriptionType: 10,
+              TargetUrl: 'http://' + Spree::Config.site_url + '/api/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1'
+          }.to_json
+          api_hooks_url = '/api/hooks/qs'
+        end
 
-        post_api_response('/api/hooks', '', json)
+        if subscription_type == :product_updated then
+          payload = {
+              HookSubscriptionType: 11,
+              TargetUrl: 'http://' + Spree::Config.site_url + '/api/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1'
+          }.to_json
+          api_hooks_url = '/api/hooks/qs'
+        end
+
+        if subscription_type == :order_allocated then
+          payload = {
+              HookSubscriptionType: 2,
+              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/order'
+          }.to_json
+          api_hooks_url = '/api/hooks'
+        end
+
+        if subscription_type == :order_dispatched then
+          payload = {
+              HookSubscriptionType: 5,
+              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/order_dispatched'
+          }.to_json
+          api_hooks_url = '/api/hooks'
+        end
+
+        post_api_response(api_hooks_url, '', payload)
       end
 
       def post_api_response(endpoint_url, params = '', json = '')
