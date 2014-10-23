@@ -28,6 +28,10 @@
                             <%= label_tag(:markOrderAsAwaitingDispatchOnCreate, 'Immediately mark orders as Awaiting dispatch in marketplace') + tag(:br) %>
                             <%= preference_field_tag(:markOrderAsAwaitingDispatchOnCreate, SpreeMarketplacelab::Config[:markOrderAsAwaitingDispatchOnCreate], class: 'fullwidth') %>
                         </div>
+                        <div class="field">
+                            <%= label_tag(:apiBaseUrl, 'Spree Auth Token') + tag(:br) %>
+                            <%= preference_field_tag(:authToken, SpreeMarketplacelab::Config[:authToken], class: 'fullwidth') %>
+                        </div>
                     </fieldset>
                 </div>
             </div>

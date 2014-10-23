@@ -4,10 +4,12 @@ module Marketplace
   class Api
     include Listenable
 
-    def initialize(api_key, account_key, api_base_url)
+    def initialize(api_key, account_key, api_base_url, spree_auth_token, mark_orders_as_awaiting_dispatch)
       @api_key = api_key
       @account_key = account_key
       @api_base_url = api_base_url
+      @spree_auth_token = spree_auth_token
+      @mark_orders_as_awaiting_dispatch = mark_orders_as_awaiting_dispatch
     end
 
     def self.instance
@@ -15,8 +17,10 @@ module Marketplace
         api_key = SpreeMarketplacelab::Config[:apiKey]
         account_key = SpreeMarketplacelab::Config[:accountKey]
         api_base_url = SpreeMarketplacelab::Config[:apiBaseUrl]
+        spree_auth_token = SpreeMarketplacelab::Config[:authToken]
+        mark_orders_as_awaiting_dispatch = SpreeMarketplacelab::Config[:markOrderAsAwaitingDispatchOnCreate]
 
-        self.new(api_key, account_key, api_base_url)
+        self.new(api_key, account_key, api_base_url, spree_auth_token, mark_orders_as_awaiting_dispatch)
       end
     end
 
@@ -108,10 +112,12 @@ module Marketplace
 
     def create_order(spree_order)
       marketplace_order_json = convert_to_marketplace_order(spree_order)
-      if (post_api_response('/api/orders/create', '', marketplace_order_json))
-        marketplace_order_adjustment = convert_to_order_adjustment(spree_order, 'AwaitingDispatch')
-        post_api_response('/api/orders/' + spree_order.number + '/adjustment', '', marketplace_order_adjustment)
-      end
+      post_api_response('/api/orders/create', '', marketplace_order_json)
+
+      # if (post_api_response('/api/orders/create', '', marketplace_order_json))
+      #   marketplace_order_adjustment = convert_to_order_adjustment(spree_order, 'AwaitingDispatch')
+      #   post_api_response('/api/orders/' + spree_order.number + '/adjustment', '', marketplace_order_adjustment)
+      # end
     end
 
     def cancel_order(spree_order)
@@ -176,6 +182,7 @@ module Marketplace
             CustomerFirstName: "First",
             CustomerLastName: "Last",
             StoreOrderDate: spree_order.created_at,
+            MarkOrderAsAwaitingDispatch: @mark_orders_as_awaiting_dispatch,
         }
 
         order_dto[:OrderItems] = []
@@ -210,7 +217,7 @@ module Marketplace
         if subscription_type == :listing_created then
           payload = {
               HookSubscriptionType: 6,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/listing'
+              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/api/hooks'
         end
@@ -218,7 +225,7 @@ module Marketplace
         if subscription_type == :product_created then
           payload = {
               HookSubscriptionType: 10,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/api/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1'
+              TargetUrl: 'http://' + Spree::Config.site_url + '/api/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1&token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/api/hooks/qs'
         end
@@ -226,7 +233,7 @@ module Marketplace
         if subscription_type == :product_updated then
           payload = {
               HookSubscriptionType: 11,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/api/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1'
+              TargetUrl: 'http://' + Spree::Config.site_url + '/api/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1&token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/api/hooks/qs'
         end
@@ -234,7 +241,7 @@ module Marketplace
         if subscription_type == :order_allocated then
           payload = {
               HookSubscriptionType: 2,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/order'
+              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/order?token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/api/hooks'
         end
@@ -242,7 +249,7 @@ module Marketplace
         if subscription_type == :order_dispatched then
           payload = {
               HookSubscriptionType: 5,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/order_dispatched'
+              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/order_dispatched?token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/api/hooks'
         end

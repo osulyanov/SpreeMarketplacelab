@@ -34,14 +34,9 @@ module Spree
 
         shipment = Spree::Shipment.find_by!(number: order.shipments[0].number)
 
-        # if shipment.can_ready?
-        #   shipment.ready!
           unless shipment.shipped?
             shipment.ship!
           end
-        # else
-        #   @result = "cant ready shipment"
-        # end
 
       end
     end
