@@ -10,6 +10,16 @@ module Marketplace
       @api_base_url = api_base_url
       @spree_auth_token = spree_auth_token
       @mark_orders_as_awaiting_dispatch = mark_orders_as_awaiting_dispatch
+
+      @api_version = "api" # could be "api/v1"
+
+      # marketplacelab headers
+      @headers = {
+          "X-MarketplaceLab-User-Agent-Application-Name" => "",
+          "X-MarketplaceLab-User-Agent-Language" => "Ruby #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}",
+          "X-MarketplaceLab-User-Agent-Application-Version" => "master"
+      }
+
     end
 
     def self.instance
@@ -30,11 +40,11 @@ module Marketplace
         DispatchDate: Time.now.strftime("%Y-%m-%d %H:%M")
       }.to_json
 
-      post_api_response("/api/orders/#{store_order_id}/dispatch", "", dispatch_model)
+      post_api_response("/orders/#{store_order_id}/dispatch", "", dispatch_model)
     end
 
     def get_dispatch_status(store_product_id)
-      get_api_response("/api/orders/dispatchstatus", "storeProductId=#{store_product_id}", true)
+      get_api_response("/orders/dispatchstatus", "storeProductId=#{store_product_id}", true)
     end
 
     def create_listing(spree_product, spree_user, sub_condition)
@@ -85,7 +95,7 @@ module Marketplace
         Comment: "From Furniture"
       }.to_json
 
-      post_api_response("/api/listings/selleremail", "sellerEmail=#{spree_user.email}", listing_model)
+      post_api_response("/listings/selleremail", "sellerEmail=#{spree_user.email}", listing_model)
     end
 
     def create_product(spree_product)
@@ -99,7 +109,7 @@ module Marketplace
           }
       }.to_json
 
-      post_api_response('/api/products', '', marketplace_product_json)
+      post_api_response('/products', '', marketplace_product_json)
     end
 
     def update_product(spree_product)
@@ -107,22 +117,22 @@ module Marketplace
     end
 
     def get_best_prices(product_ids)
-      get_api_response("/api/products/#{product_ids}/listings?condition=new&view=bestprices")
+      get_api_response("/products/#{product_ids}/listings?condition=new&view=bestprices")
     end
 
     def create_order(spree_order)
       marketplace_order_json = convert_to_marketplace_order(spree_order)
-      post_api_response('/api/orders/create', '', marketplace_order_json)
+      post_api_response('/orders/create', '', marketplace_order_json)
 
-      # if (post_api_response('/api/orders/create', '', marketplace_order_json))
+      # if (post_api_response('/orders/create', '', marketplace_order_json))
       #   marketplace_order_adjustment = convert_to_order_adjustment(spree_order, 'AwaitingDispatch')
-      #   post_api_response('/api/orders/' + spree_order.number + '/adjustment', '', marketplace_order_adjustment)
+      #   post_api_response('/orders/' + spree_order.number + '/adjustment', '', marketplace_order_adjustment)
       # end
     end
 
     def cancel_order(spree_order)
       marketplace_order_adjustment = convert_to_order_adjustment(spree_order, 'Cancelled')
-      post_api_response('/api/' + spree_order.number + '/adjustment', '', marketplace_order_adjustment)
+      post_api_response('/' + spree_order.number + '/adjustment', '', marketplace_order_adjustment)
     end
 
     def notify(event_name, data)
@@ -131,17 +141,17 @@ module Marketplace
 
     # @listing_ids comma separated list of listings identifiers
     def get_deliveryoptions(listing_ids, country_code)
-      get_api_response("/api/listings/#{listing_ids}/shippingmethods/#{country_code}")
+      get_api_response("/listings/#{listing_ids}/shippingmethods/#{country_code}")
     end
 
     # get listings for a product(s)
     # @product_ids comma separated list of product identifiers
     def get_listings(product_ids)
-      get_api_response("/api/products/#{product_ids}/listings")
+      get_api_response("/products/#{product_ids}/listings")
     end
 
     def get_listing(listing_id)
-      listing = get_api_response("/api/listings/#{listing_id}")
+      listing = get_api_response("/listings/#{listing_id}")
       listing[0] if listing && listing.any?
     end
 
@@ -200,7 +210,6 @@ module Marketplace
                                           SellerId: listing[:seller_id],
                                           ListingDispatchFromCountryId: 235,
                                           ListingConditionId: 1,
-                                          ListingSubConditionId: 1,
                                           CurrencyType: 826
                                       })
         }
@@ -219,23 +228,23 @@ module Marketplace
               HookSubscriptionType: 6,
               TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
           }.to_json
-          api_hooks_url = '/api/hooks'
+          api_hooks_url = '/hooks'
         end
 
         if subscription_type == :product_created then
           payload = {
               HookSubscriptionType: 10,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/api/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1&token=' + @spree_auth_token
+              TargetUrl: 'http://' + Spree::Config.site_url + '/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1&token=' + @spree_auth_token
           }.to_json
-          api_hooks_url = '/api/hooks/qs'
+          api_hooks_url = '/hooks/qs'
         end
 
         if subscription_type == :product_updated then
           payload = {
               HookSubscriptionType: 11,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/api/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1&token=' + @spree_auth_token
+              TargetUrl: 'http://' + Spree::Config.site_url + '/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1&token=' + @spree_auth_token
           }.to_json
-          api_hooks_url = '/api/hooks/qs'
+          api_hooks_url = '/hooks/qs'
         end
 
         if subscription_type == :order_allocated then
@@ -243,7 +252,7 @@ module Marketplace
               HookSubscriptionType: 2,
               TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/order?token=' + @spree_auth_token
           }.to_json
-          api_hooks_url = '/api/hooks'
+          api_hooks_url = '/hooks'
         end
 
         if subscription_type == :order_dispatched then
@@ -251,29 +260,42 @@ module Marketplace
               HookSubscriptionType: 5,
               TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/order_dispatched?token=' + @spree_auth_token
           }.to_json
-          api_hooks_url = '/api/hooks'
+          api_hooks_url = '/hooks'
         end
 
         post_api_response(api_hooks_url, '', payload)
       end
 
       def post_api_response(endpoint_url, params = '', json = '')
-        url = "#{@api_base_url}#{endpoint_url}?#{params}&apikey=#{@api_key}&accountkey=#{@account_key}"
+        if params != ''
+          params += "&"
+        end
+
+        params += "apikey=#{@api_key}&accountkey=#{@account_key}"
+
+        url = "#{@api_base_url}#{@api_version}#{endpoint_url}?#{params}"
         logger.info "Marketplace POST #{url} #{json}"
 
-        response = ::HTTParty.post(url, verify: false, body: json, headers: {'Content-Type' => 'application/json'})
+        headers = @headers
+        headers["Content-Type"] = "application/json"
+
+        response = ::HTTParty.post(url, verify: false, body: json, headers: headers)
         logger.info "Marketplace POST response code=#{response.code} content-length=#{response.headers['content-length']}"
 
         return (response.code >= 200 || response.code < 300)
       end
 
       def get_api_response(endpoint_url, params = '', hash_result = false)
-        separator = endpoint_url.index("?") == nil ? "?" : "&";
+        if params != ''
+          params += "&"
+        end
 
-        url = "#{@api_base_url}#{endpoint_url}#{separator}#{params}&apikey=#{@api_key}&accountkey=#{@account_key}"
+        params += "apikey=#{@api_key}&accountkey=#{@account_key}"
+
+        url = "#{@api_base_url}#{@api_version}#{endpoint_url}?#{params}"
         logger.info "Marketplace GET #{url}"
 
-        response = ::HTTParty.get(url, verify: false)
+        response = ::HTTParty.get(url, verify: false, headers: @headers)
         logger.info "Marketplace GET response code=#{response.code} content-length=#{response.headers['content-length']}"
 
         return (hash_result ? convert_hash_to_ruby_style(response) : convert_array_to_ruby_style(response)) if response && response.code == 200
