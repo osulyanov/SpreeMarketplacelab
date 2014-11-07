@@ -15,7 +15,7 @@ module Marketplace
 
       # marketplacelab headers
       @headers = {
-          "X-MarketplaceLab-User-Agent-Application-Name" => "",
+          "X-MarketplaceLab-User-Agent-Application-Name" => ENV["MARKETPLACE_APP_NAME"],
           "X-MarketplaceLab-User-Agent-Language" => "Ruby #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}",
           "X-MarketplaceLab-User-Agent-Application-Version" => "master"
       }
@@ -122,7 +122,7 @@ module Marketplace
 
     def create_order(spree_order)
       marketplace_order_json = convert_to_marketplace_order(spree_order)
-      post_api_response('/orders/create', '', marketplace_order_json)
+      post_api_response('/orders/create', 'markAsDispatched=' + @mark_orders_as_awaiting_dispatch, marketplace_order_json)
 
       # if (post_api_response('/orders/create', '', marketplace_order_json))
       #   marketplace_order_adjustment = convert_to_order_adjustment(spree_order, 'AwaitingDispatch')
@@ -192,7 +192,6 @@ module Marketplace
             CustomerFirstName: "First",
             CustomerLastName: "Last",
             StoreOrderDate: spree_order.created_at,
-            MarkOrderAsAwaitingDispatch: @mark_orders_as_awaiting_dispatch,
         }
 
         order_dto[:OrderItems] = []
