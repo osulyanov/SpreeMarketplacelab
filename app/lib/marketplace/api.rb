@@ -12,10 +12,11 @@ module Marketplace
       @mark_orders_as_awaiting_dispatch = mark_orders_as_awaiting_dispatch
 
       @api_version = "api" # could be "api/v1"
+      @appName = ((ENV["MARKETPLACE_APP_NAME"]) || "Spree-NulAppName")
 
       # marketplacelab headers
       @headers = {
-          "X-MarketplaceLab-User-Agent-Application-Name" => ENV["MARKETPLACE_APP_NAME"],
+          "X-MarketplaceLab-User-Agent-Application-Name" => @appName,
           "X-MarketplaceLab-User-Agent-Language" => "Ruby #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}",
           "X-MarketplaceLab-User-Agent-Application-Version" => "master"
       }
