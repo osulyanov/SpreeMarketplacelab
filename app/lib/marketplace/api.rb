@@ -123,7 +123,7 @@ module Marketplace
 
     def create_order(spree_order)
       marketplace_order_json = convert_to_marketplace_order(spree_order)
-      post_api_response('/orders/create', 'markAsDispatched=' + @mark_orders_as_awaiting_dispatch, marketplace_order_json)
+      post_api_response('/orders/create', 'markAsDispatched=' + @mark_orders_as_awaiting_dispatch.to_s, marketplace_order_json)
 
       # if (post_api_response('/orders/create', '', marketplace_order_json))
       #   marketplace_order_adjustment = convert_to_order_adjustment(spree_order, 'AwaitingDispatch')
@@ -210,6 +210,7 @@ module Marketplace
                                           SellerId: listing[:seller_id],
                                           ListingDispatchFromCountryId: 235,
                                           ListingConditionId: 1,
+                                          QuantityUnitTypeId: 1,
                                           CurrencyType: 826
                                       })
         }
