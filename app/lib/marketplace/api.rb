@@ -165,6 +165,15 @@ module Marketplace
     end
 
     private
+
+      # some marketplacelab constants
+      COUNTRY_ID_UK = 235 # country United Kingdom
+      LISTING_CONDITION_ID_NEW = 1 # listing condition New
+      QUANTITY_UNIT_TYPE_ID = 1 # quantity unit type Item
+      CURRENCY_TYPE_ID_GBP = 826 # currency type GBP
+      PAYMENT_STATUS_PAID = 30 # payment status Paid
+      SHIPPING_STATUS_PENDING = 10 # shipping status Pending
+
       def convert_to_order_adjustment(spree_order, adjustment_type)
         adjustment_dto = {
             CustomerEmail: spree_order.email,
@@ -201,17 +210,17 @@ module Marketplace
           listing = item.listing
           order_dto[:OrderItems].push({
                                           ListingId: listing[:id],
-                                          PaymentStatus: 30, # Paid
-                                          ShippingStatus: 10, # Pending
+                                          PaymentStatus: PAYMENT_STATUS_PAID,
+                                          ShippingStatus: SHIPPING_STATUS_PENDING,
                                           Quantity: item.quantity,
                                           Price: item.price,
                                           StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
                                           StoreProductId: item.variant.sku,
                                           SellerId: listing[:seller_id],
-                                          ListingDispatchFromCountryId: 235,
-                                          ListingConditionId: 1,
-                                          QuantityUnitTypeId: 1,
-                                          CurrencyType: 826
+                                          ListingDispatchFromCountryId: COUNTRY_ID_UK,
+                                          ListingConditionId: LISTING_CONDITION_ID_NEW,
+                                          QuantityUnitTypeId: QUANTITY_UNIT_TYPE_ID,
+                                          CurrencyType: CURRENCY_TYPE_ID_GBP
                                       })
         }
 
