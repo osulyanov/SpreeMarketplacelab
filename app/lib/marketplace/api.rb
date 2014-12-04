@@ -35,6 +35,10 @@ module Marketplace
       end
     end
 
+    def get_craft_product(store_product_id)
+      get_api_response("/products/#{store_product_id}/craftlisting", "", true)
+    end
+
     def dispatch_order(store_order_id)
       dispatch_model = {
         StoreOrderId: store_order_id,
@@ -158,6 +162,7 @@ module Marketplace
 
     def subscribe_to_webhooks
       subscribe_to :listing_created
+      subscribe_to :listing_updated
       subscribe_to :product_created
       subscribe_to :product_updated
       subscribe_to :order_allocated
@@ -241,20 +246,28 @@ module Marketplace
           api_hooks_url = '/hooks'
         end
 
+        if subscription_type == :listing_updated then
+          payload = {
+              HookSubscriptionType: 7,
+              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
+          }.to_json
+          api_hooks_url = '/hooks'
+        end
+
         if subscription_type == :product_created then
           payload = {
               HookSubscriptionType: 10,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1&token=' + @spree_auth_token
+              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
           }.to_json
-          api_hooks_url = '/hooks/qs'
+          api_hooks_url = '/hooks'
         end
 
         if subscription_type == :product_updated then
           payload = {
               HookSubscriptionType: 11,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/products?product[name]={Title}&product[price]={Price.Amount}&product[shipping_category_id]=1&token=' + @spree_auth_token
+              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
           }.to_json
-          api_hooks_url = '/hooks/qs'
+          api_hooks_url = '/hooks'
         end
 
         if subscription_type == :order_allocated then
