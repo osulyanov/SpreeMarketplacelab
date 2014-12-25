@@ -35,6 +35,10 @@ module Marketplace
       end
     end
 
+    def check_stock(listing_id)
+      get_api_response("/#{listing_id}/availablestock", "", true)
+    end
+
     def get_craft_product(store_product_id)
       get_api_response("/products/#{store_product_id}/craftlisting", "", true)
     end
@@ -225,7 +229,10 @@ module Marketplace
                                           ListingDispatchFromCountryId: COUNTRY_ID_UK,
                                           ListingConditionId: LISTING_CONDITION_ID_NEW,
                                           QuantityUnitTypeId: QUANTITY_UNIT_TYPE_ID,
-                                          CurrencyType: CURRENCY_TYPE_ID_GBP
+                                          CurrencyType: CURRENCY_TYPE_ID_GBP,
+                                          DeliveryAddress1: spree_order.shipping_address.address1,
+                                          DeliveryTown: spree_order.shipping_address.city,
+                                          DeliveryPostcode: spree_order.shipping_address.zipcode
                                       })
         }
 
