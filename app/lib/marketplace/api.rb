@@ -35,8 +35,8 @@ module Marketplace
       end
     end
 
-    def check_stock(listing_id)
-      get_api_response("/#{listing_id}/availablestock", "", true)
+    def check_stock(store_product_id)
+      get_api_response("/listings/#{store_product_id}/availablestock", "", false)
     end
 
     def get_craft_product(store_product_id)
