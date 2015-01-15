@@ -132,11 +132,6 @@ module Marketplace
     def create_order(spree_order)
       marketplace_order_json = convert_to_marketplace_order(spree_order)
       post_api_response('/orders/create', 'markAsDispatched=' + @mark_orders_as_awaiting_dispatch.to_s, marketplace_order_json)
-
-      # if (post_api_response('/orders/create', '', marketplace_order_json))
-      #   marketplace_order_adjustment = convert_to_order_adjustment(spree_order, 'AwaitingDispatch')
-      #   post_api_response('/orders/' + spree_order.number + '/adjustment', '', marketplace_order_adjustment)
-      # end
     end
 
     def cancel_order(spree_order)
@@ -208,24 +203,29 @@ module Marketplace
             SellerOrderId: spree_order.number,
             CustomerEmail: spree_order.email,
             CustomerTitle: "",
-            CustomerFirstName: "First",
-            CustomerLastName: "Last",
+            CustomerFirstName: spree_order.shipping_address.firstname,
+            CustomerLastName: spree_order.shipping_address.lastname,
             StoreOrderDate: spree_order.created_at,
         }
 
         order_dto[:OrderItems] = []
 
         spree_order.line_items.each { |item|
-          listing = item.listing
+          if item.respond_to?(:listing)
+            listing = item.listing
+          else
+            listing_id = Spree::Product.joins(:master).find_by("spree_variants.id=?", item.variant_id).property("ListingId")
+            listing = get_listing(listing_id)
+          end
           order_dto[:OrderItems].push({
-                                          ListingId: listing[:id],
+                                          ListingId: listing['id'],
                                           PaymentStatus: PAYMENT_STATUS_PAID,
                                           ShippingStatus: SHIPPING_STATUS_PENDING,
                                           Quantity: item.quantity,
                                           Price: item.price,
                                           StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
                                           StoreProductId: item.variant.sku,
-                                          SellerId: listing[:seller_id],
+                                          SellerId: listing['seller_id'],
                                           ListingDispatchFromCountryId: COUNTRY_ID_UK,
                                           ListingConditionId: LISTING_CONDITION_ID_NEW,
                                           QuantityUnitTypeId: QUANTITY_UNIT_TYPE_ID,
