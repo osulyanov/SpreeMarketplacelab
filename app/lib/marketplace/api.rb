@@ -232,12 +232,25 @@ module Marketplace
                                           CurrencyType: CURRENCY_TYPE_ID_GBP,
                                           DeliveryAddress1: spree_order.shipping_address.address1,
                                           DeliveryTown: spree_order.shipping_address.city,
-                                          DeliveryPostcode: spree_order.shipping_address.zipcode
+                                          DeliveryPostcode: spree_order.shipping_address.zipcode,
+                                          ShippingType: get_shipping_type(spree_order)
                                       })
         }
 
-
         return order_dto.to_json
+      end
+
+      def get_shipping_type(spree_order)
+        shipping_method = nil
+        spree_order.shipments[0].shipping_rates.each do |rate|
+          if rate.selected
+            shipping_method = rate.shipping_method
+          end
+        end
+
+        if shipping_method != nil
+          return /(\d+)/.match(shipping_method.admin_name)[0].to_i
+        end
       end
 
       def logger
