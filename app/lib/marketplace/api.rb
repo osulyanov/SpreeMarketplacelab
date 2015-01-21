@@ -35,6 +35,10 @@ module Marketplace
       end
     end
 
+    def get_seller(seller_id)
+      get_api_response("/sellers/#{seller_id}", "", false)
+    end
+
     def check_stock(store_product_id)
       get_api_response("/listings/#{store_product_id}/availablestock", "", false)
     end
