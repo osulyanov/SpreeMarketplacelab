@@ -35,6 +35,10 @@ module Marketplace
       end
     end
 
+    def get_seller_by_alias(seller_alias)
+      get_api_response("/sellers", "sellerAlias=#{seller_alias}", true)
+    end
+
     def get_seller(seller_id)
       get_api_response("/sellers/#{seller_id}", "", false)
     end
