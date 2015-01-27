@@ -36,7 +36,7 @@ module Marketplace
     end
 
     def create_or_update_product(store_product_id, price)
-      tmpl_products = marketplace_api.get_products(product_sku)
+      tmpl_products = get_products(product_sku)
 
       if tmpl_products == nil || tmpl_products.length == 0
         logger.error "Products fro SKU #{product_sku} not found at the marketplace"
