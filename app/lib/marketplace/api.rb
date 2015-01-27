@@ -35,6 +35,61 @@ module Marketplace
       end
     end
 
+    def create_or_update_product(store_product_id, price)
+      tmpl_products = marketplace_api.get_products(product_sku)
+
+      if tmpl_products == nil || tmpl_products.length == 0
+        logger.error "Products fro SKU #{product_sku} not found at the marketplace"
+        return nil
+      end
+
+      marketplace_product = tmpl_products[0]
+
+      spree_product = Spree::Product.includes(:taxons).includes(:master).joins(:master).find_by("spree_variants.sku = ?", product_sku)
+
+      if spree_product == nil
+        logger.info "Product for SKU #{product_sku} not found in spree, creating a new one"
+
+        # create new product (see spree_api products_controller)
+        product_params = {
+            shipping_category_id: 1,
+            name: marketplace_product["title"],
+            price: price,
+            sku: marketplace_product["store_product_id"],
+            description: marketplace_product["long_description"],
+            weight: marketplace_product["weight_in_grams"],
+            height: marketplace_product["height_in_mm"],
+            width: marketplace_product["width_in_mm"],
+            depth: marketplace_product["depth_in_mm"],
+        }
+
+        options = { variants_attrs: [], options_attrs: [] }
+        spree_product = Spree::Core::Importer::Product.new(nil, product_params, options).create
+
+      else
+        logger.info "Product for SKU #{product_sku} found in spree, updating"
+
+        spree_product.name = marketplace_product["title"]
+        spree_product.price = price
+        spree_product.description = marketplace_product["long_description"]
+        spree_product.weight = marketplace_product["weight_in_grams"]
+        spree_product.height = marketplace_product["height_in_mm"]
+        spree_product.width = marketplace_product["width_in_mm"]
+        spree_product.depth = marketplace_product["depth_in_mm"]
+      end
+
+      spree_product.save!
+      logger.info "Product saved, SKU: #{product_sku}"
+
+      if marketplace_product['attributes'] != nil
+        marketplace_product['attributes'].each do |attr|
+          spree_product.set_property(attr['name'], attr['value'])
+        end
+      end
+
+      return spree_product
+    end
+
     def get_products(store_product_ids)
       get_api_response("/products/#{store_product_ids}", "", false)
     end
