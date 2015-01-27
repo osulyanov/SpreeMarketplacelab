@@ -36,19 +36,19 @@ module Marketplace
     end
 
     def create_or_update_product(store_product_id, price)
-      tmpl_products = get_products(product_sku)
+      tmpl_products = get_products(store_product_id)
 
       if tmpl_products == nil || tmpl_products.length == 0
-        logger.error "Products fro SKU #{product_sku} not found at the marketplace"
+        logger.error "Products fro SKU #{store_product_id} not found at the marketplace"
         return nil
       end
 
       marketplace_product = tmpl_products[0]
 
-      spree_product = Spree::Product.includes(:taxons).includes(:master).joins(:master).find_by("spree_variants.sku = ?", product_sku)
+      spree_product = Spree::Product.includes(:taxons).includes(:master).joins(:master).find_by("spree_variants.sku = ?", store_product_id)
 
       if spree_product == nil
-        logger.info "Product for SKU #{product_sku} not found in spree, creating a new one"
+        logger.info "Product for SKU #{store_product_id} not found in spree, creating a new one"
 
         # create new product (see spree_api products_controller)
         product_params = {
@@ -67,7 +67,7 @@ module Marketplace
         spree_product = Spree::Core::Importer::Product.new(nil, product_params, options).create
 
       else
-        logger.info "Product for SKU #{product_sku} found in spree, updating"
+        logger.info "Product for SKU #{store_product_id} found in spree, updating"
 
         spree_product.name = marketplace_product["title"]
         spree_product.price = price
@@ -79,7 +79,7 @@ module Marketplace
       end
 
       spree_product.save!
-      logger.info "Product saved, SKU: #{product_sku}"
+      logger.info "Product saved, SKU: #{store_product_id}"
 
       if marketplace_product['attributes'] != nil
         marketplace_product['attributes'].each do |attr|
