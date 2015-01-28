@@ -35,7 +35,13 @@ module Marketplace
       end
     end
 
+    # creates or updates a product in spree
+    # returns [spree_product, is_new_product_created]
+    #   spree_product -- a reference to a product
+    #   is_new_product_created -- boolean, would be true in case a new product was just created
     def create_or_update_product(store_product_id, price)
+      return nil if price == nil
+
       tmpl_products = get_products(store_product_id)
 
       if tmpl_products == nil || tmpl_products.length == 0
@@ -46,6 +52,8 @@ module Marketplace
       marketplace_product = tmpl_products[0]
 
       spree_product = Spree::Product.includes(:taxons).includes(:master).joins(:master).find_by("spree_variants.sku = ?", store_product_id)
+
+      is_new_product_created = false
 
       if spree_product == nil
         logger.info "Product for SKU #{store_product_id} not found in spree, creating a new one"
@@ -65,7 +73,7 @@ module Marketplace
 
         options = { variants_attrs: [], options_attrs: [] }
         spree_product = Spree::Core::Importer::Product.new(nil, product_params, options).create
-
+        is_new_product_created = true
       else
         logger.info "Product for SKU #{store_product_id} found in spree, updating"
 
@@ -87,7 +95,7 @@ module Marketplace
         end
       end
 
-      return spree_product
+      return spree_product, is_new_product_created
     end
 
     def get_products(store_product_ids)
