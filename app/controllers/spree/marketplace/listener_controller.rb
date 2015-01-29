@@ -8,6 +8,8 @@ module Spree
 
         logger.info "Product hook for SKU: #{product_sku}"
 
+        stopwatch = ::Stopwatch.new
+
         price = request.POST['Price']['Amount'].to_f if request.POST['Price'] != nil
 
         spree_product = marketplace_api.create_or_update_product(product_sku, price)
@@ -15,6 +17,8 @@ module Spree
         if spree_product != nil
           marketplace_api.notify(:product_updated, product_sku)
         end
+
+        logger.info "Product hook for SKU: #{product_sku} processed, took #{stopwatch.elapsed_time}"
 
         @result = "ok"
       end
@@ -25,8 +29,12 @@ module Spree
 
         logger.info "Listing hook for SKU: #{product_sku}"
 
+        stopwatch = ::Stopwatch.new
+
         marketplace_api = ::Marketplace::Api.instance
         marketplace_api.notify(:listing_updated, product_sku)
+
+        logger.info "Listing hook for SKU: #{product_sku} processed, took #{stopwatch.elapsed_time}"
 
         @result = "ok"
       end

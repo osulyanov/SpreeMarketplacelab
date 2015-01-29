@@ -42,6 +42,8 @@ module Marketplace
     def create_or_update_product(store_product_id, price)
       return nil if price == nil
 
+      s = ::Stopwatch.new
+
       tmpl_products = get_products(store_product_id)
 
       if tmpl_products == nil || tmpl_products.length == 0
@@ -51,12 +53,16 @@ module Marketplace
 
       marketplace_product = tmpl_products[0]
 
+      logger.info "TMPL call finished, took #{s.elapsed_time}"
+
       spree_product = Spree::Product.includes(:taxons).includes(:master).joins(:master).find_by("spree_variants.sku = ?", store_product_id)
+
+      logger.info "Spree product read, took #{s.elapsed_time}"
 
       is_new_product_created = false
 
       if spree_product == nil
-        logger.info "Product for SKU #{store_product_id} not found in spree, creating a new one"
+        logger.info "Product for SKU #{store_product_id} not found in spree, creating a new one, took #{s.elapsed_time}"
 
         # create new product (see spree_api products_controller)
         product_params = {
@@ -75,7 +81,7 @@ module Marketplace
         spree_product = Spree::Core::Importer::Product.new(nil, product_params, options).create
         is_new_product_created = true
       else
-        logger.info "Product for SKU #{store_product_id} found in spree, updating"
+        logger.info "Product for SKU #{store_product_id} found in spree, updating, took #{s.elapsed_time}"
 
         spree_product.name = marketplace_product["title"]
         spree_product.price = price
@@ -87,13 +93,15 @@ module Marketplace
       end
 
       spree_product.save!
-      logger.info "Product saved, SKU: #{store_product_id}"
+      logger.info "Product saved, SKU: #{store_product_id}, took #{s.elapsed_time}"
 
       if marketplace_product['attributes'] != nil
         marketplace_product['attributes'].each do |attr|
           spree_product.set_property(attr['name'], attr['value'])
         end
       end
+
+      logger.info "Properties set, returning, SKU: #{store_product_id}, took #{s.elapsed_time}"
 
       return spree_product, is_new_product_created
     end
@@ -397,8 +405,9 @@ module Marketplace
         headers = @headers
         headers["Content-Type"] = "application/json"
 
+        s = ::Stopwatch.new
         response = ::HTTParty.post(url, verify: false, body: json, headers: headers)
-        logger.info "Marketplace POST response code=#{response.code} content-length=#{response.headers['content-length']}"
+        logger.info "Marketplace POST response code=#{response.code} content-length=#{response.headers['content-length']}, took #{s.elapsed_time}"
 
         return (response.code >= 200 || response.code < 300)
       end
@@ -413,8 +422,9 @@ module Marketplace
         url = "#{@api_base_url}#{@api_version}#{endpoint_url}?#{params}"
         logger.info "Marketplace GET #{url}"
 
+        s = ::Stopwatch.new
         response = ::HTTParty.get(url, verify: false, headers: @headers)
-        logger.info "Marketplace GET response code=#{response.code} content-length=#{response.headers['content-length']}"
+        logger.info "Marketplace GET response code=#{response.code} content-length=#{response.headers['content-length']}, took #{s.elapsed_time}"
 
         return (hash_result ? convert_hash_to_ruby_style(response) : convert_array_to_ruby_style(response)) if response && response.code == 200
       end
