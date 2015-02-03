@@ -286,6 +286,7 @@ module Marketplace
             StoreOrderId: spree_order.number,
             SellerOrderId: spree_order.number,
             CustomerEmail: spree_order.email,
+            CustomerPhoneNumber: spree_order.billing_address.phone,
             CustomerTitle: "",
             CustomerFirstName: spree_order.shipping_address.firstname,
             CustomerLastName: spree_order.shipping_address.lastname,
@@ -314,9 +315,13 @@ module Marketplace
                                           ListingConditionId: LISTING_CONDITION_ID_NEW,
                                           QuantityUnitTypeId: QUANTITY_UNIT_TYPE_ID,
                                           CurrencyType: CURRENCY_TYPE_ID_GBP,
+                                          DeliveryName: spree_order.shipping_address.firstname + " " + spree_order.shipping_address.lastname,
                                           DeliveryAddress1: spree_order.shipping_address.address1,
+                                          DeliveryAddress2: spree_order.shipping_address.address2,
+                                          DeliveryCountry: spree_order.shipping_address.country.iso,
                                           DeliveryTown: spree_order.shipping_address.city,
                                           DeliveryPostcode: spree_order.shipping_address.zipcode,
+                                          DeliveryCost: spree_order.ship_total,
                                           ShippingType: get_shipping_type(spree_order)
                                       })
         }
