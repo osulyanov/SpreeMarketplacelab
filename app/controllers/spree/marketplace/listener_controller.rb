@@ -86,11 +86,25 @@ module Spree
 
       end
 
+      def order_unable_to_dispatch
+        store_order_id = request.POST["StoreOrderId"]
+        logger.info "Order Unable To Dispatch Hook called for StoreOrderId #{store_order_id}."
+        @result = "ok"
+
+        order = Spree::Order.find_by!(number: store_order_id)
+
+        if order
+          order.cancel!
+          logger.info "Successfully cancelled an order, StoreOrderId #{store_order_id}."
+        else
+          logger.error "Order not found, StoreOrderId #{store_order_id}."
+        end
+      end
+
       private
         def logger
           @logger ||= MarketplaceLogger.new
         end
-
     end
   end
 end
