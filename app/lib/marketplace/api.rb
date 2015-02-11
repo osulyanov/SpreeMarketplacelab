@@ -302,6 +302,7 @@ module Marketplace
             listing_id = Spree::Product.joins(:master).find_by("spree_variants.id=?", item.variant_id).property("ListingId")
             listing = get_listing(listing_id)
           end
+
           order_dto[:OrderItems].push({
                                           ListingId: listing['id'],
                                           PaymentStatus: PAYMENT_STATUS_PAID,
@@ -319,6 +320,7 @@ module Marketplace
                                           DeliveryAddress1: spree_order.shipping_address.address1,
                                           DeliveryAddress2: spree_order.shipping_address.address2,
                                           DeliveryCountry: spree_order.shipping_address.country.iso,
+                                          DeliveryCounty: spree_order.shipping_address.state_name,
                                           DeliveryTown: spree_order.shipping_address.city,
                                           DeliveryPostcode: spree_order.shipping_address.zipcode,
                                           DeliveryCost: spree_order.ship_total,
