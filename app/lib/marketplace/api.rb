@@ -352,7 +352,7 @@ module Marketplace
         if subscription_type == :listing_created then
           payload = {
               HookSubscriptionType: 6,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
+              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/hooks'
         end
@@ -360,7 +360,7 @@ module Marketplace
         if subscription_type == :listing_updated then
           payload = {
               HookSubscriptionType: 7,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
+              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/hooks'
         end
@@ -368,7 +368,7 @@ module Marketplace
         if subscription_type == :product_created then
           payload = {
               HookSubscriptionType: 10,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
+              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/hooks'
         end
@@ -376,7 +376,7 @@ module Marketplace
         if subscription_type == :product_updated then
           payload = {
               HookSubscriptionType: 11,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
+              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/hooks'
         end
@@ -384,7 +384,7 @@ module Marketplace
         if subscription_type == :order_allocated then
           payload = {
               HookSubscriptionType: 2,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/order?token=' + @spree_auth_token
+              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order?token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/hooks'
         end
@@ -392,7 +392,7 @@ module Marketplace
         if subscription_type == :order_dispatched then
           payload = {
               HookSubscriptionType: 5,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/order_dispatched?token=' + @spree_auth_token
+              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_dispatched?token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/hooks'
         end
@@ -400,7 +400,7 @@ module Marketplace
         if subscription_type == :order_unable_to_dispatch then
           payload = {
               HookSubscriptionType: 13,
-              TargetUrl: 'http://' + Spree::Config.site_url + '/marketplace/listener/order_unable_to_dispatch?token=' + @spree_auth_token
+              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_unable_to_dispatch?token=' + @spree_auth_token
           }.to_json
           api_hooks_url = '/hooks'
         end
