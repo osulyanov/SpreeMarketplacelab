@@ -324,14 +324,14 @@ module Marketplace
                                           DeliveryTown: spree_order.shipping_address.city,
                                           DeliveryPostcode: spree_order.shipping_address.zipcode,
                                           DeliveryCost: spree_order.ship_total,
-                                          ShippingType: get_shipping_type(spree_order)
+                                          ShippingType: get_shipping_type(spree_order, item)
                                       })
         }
 
         return order_dto.to_json
       end
 
-      def get_shipping_type(spree_order)
+      def get_shipping_type(spree_order, order_item)
         shipping_method = nil
         spree_order.shipments[0].shipping_rates.each do |rate|
           if rate.selected
