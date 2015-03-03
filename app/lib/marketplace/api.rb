@@ -55,7 +55,7 @@ module Marketplace
 
       logger.info "TMPL call finished, took #{s.elapsed_time}"
 
-      spree_product = Spree::Product.includes(:taxons).includes(:master).joins(:master).find_by("spree_variants.sku = ?", store_product_id)
+      spree_product = Spree::Product.includes(:variant_images).includes(:taxons).includes(:master).joins(:variant_images).joins(:master).find_by("spree_variants.sku = ?", store_product_id)
 
       logger.info "Spree product read, took #{s.elapsed_time}"
 
@@ -98,6 +98,8 @@ module Marketplace
         spree_product.depth = marketplace_product["depth_in_mm"]
       end
 
+      create_or_update_product_images(spree_product, marketplace_product)
+
       spree_product.save!
       logger.info "Product saved, SKU: #{store_product_id}, took #{s.elapsed_time}"
 
@@ -110,6 +112,29 @@ module Marketplace
       logger.info "Properties set, returning, SKU: #{store_product_id}, took #{s.elapsed_time}"
 
       return spree_product, is_new_product_created
+    end
+
+    def create_or_update_product_images(spree_product, marketplace_product)
+
+      if marketplace_product["images"] == nil
+        return
+      end
+
+      # if spree_product.images == nil
+      #   spree_product.images
+      # end
+
+      file_names = spree_product.images.pluck(:attachment_file_name)
+
+      marketplace_product["images"].each { |tmpl_img|
+        tmpl_uri = URI.parse(tmpl_img["image_url"])
+        tmpl_file_name = File.basename(tmpl_uri.path)
+
+        if !file_names.include? tmpl_file_name
+          image = Spree::Image.create!({:attachment => tmpl_uri, :viewable => spree_product})
+          spree_product.images << image
+        end
+      }
     end
 
     def get_products(store_product_ids)
@@ -234,7 +259,7 @@ module Marketplace
 
     # @listing_ids comma separated list of listings identifiers
     def get_deliveryoptions(listing_ids, country_code)
-      get_api_response("/listings/#{listing_ids}/shippingmethods/#{country_code}")
+      get_api_response("/listings/#{listing_ids}/shippingmethods/#{country_code}", true)
     end
 
     # get listings for a product(s)
