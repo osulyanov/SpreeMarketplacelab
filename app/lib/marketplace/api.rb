@@ -18,7 +18,7 @@ module Marketplace
       @headers = {
           "X-MarketplaceLab-User-Agent-Application-Name" => @appName,
           "X-MarketplaceLab-User-Agent-Language" => "Ruby #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}",
-          "X-MarketplaceLab-User-Agent-Application-Version" => "master"
+          "X-MarketplaceLab-User-Agent-get_deliveryoptionsApplication-Version" => "master"
       }
 
     end
