@@ -138,23 +138,23 @@ module Marketplace
     end
 
     def get_products(store_product_ids)
-      get_api_response("/products/#{store_product_ids}")
+      get_api_response("/products/#{store_product_ids}", "", false)
     end
 
     def get_seller_by_username(seller_username)
-      get_api_response("/sellers", "userName=#{seller_username}")
+      get_api_response("/sellers", "userName=#{seller_username}", true)
     end
 
     def get_seller(seller_id)
-      get_api_response("/sellers/#{seller_id}")
+      get_api_response("/sellers/#{seller_id}", "", false)
     end
 
     def check_stock(store_product_id)
-      get_api_response("/listings/#{store_product_id}/availablestock")
+      get_api_response("/listings/#{store_product_id}/availablestock", "", false)
     end
 
     def get_craft_product(store_product_id)
-      get_api_response("/products/#{store_product_id}/craftlisting")
+      get_api_response("/products/#{store_product_id}/craftlisting", "", true)
     end
 
     def dispatch_order(store_order_id)
@@ -167,7 +167,7 @@ module Marketplace
     end
 
     def get_dispatch_status(store_product_id)
-      get_api_response("/orders/dispatchstatus", "storeProductId=#{store_product_id}")
+      get_api_response("/orders/dispatchstatus", "storeProductId=#{store_product_id}", true)
     end
 
     def create_listing(spree_product, spree_user, sub_condition)
@@ -459,7 +459,7 @@ module Marketplace
         return (response.code >= 200 || response.code < 300)
       end
 
-      def get_api_response(endpoint_url, params = '')
+      def get_api_response(endpoint_url, params = '', hash_result = false)
         if params != ''
           params += "&"
         end
@@ -473,7 +473,7 @@ module Marketplace
         response = ::HTTParty.get(url, verify: false, headers: @headers)
         logger.info "Marketplace GET response code=#{response.code} content-length=#{response.headers['content-length']}, took #{s.elapsed_time}"
 
-        return (response.kind_of?(Array) ? convert_array_to_ruby_style(response) : convert_hash_to_ruby_style(response)) if response && response.code == 200
+        return (hash_result ? convert_hash_to_ruby_style(response) : convert_array_to_ruby_style(response)) if response && response.code == 200
       end
 
       def convert_array_to_ruby_style(camel_case_arr)
