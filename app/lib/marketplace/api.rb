@@ -18,7 +18,7 @@ module Marketplace
       @headers = {
           "X-MarketplaceLab-User-Agent-Application-Name" => @appName,
           "X-MarketplaceLab-User-Agent-Language" => "Ruby #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}",
-          "X-MarketplaceLab-User-Agent-Application-Version" => "master"
+          "X-MarketplaceLab-User-Agent-get_deliveryoptionsApplication-Version" => "master"
       }
 
     end
@@ -259,7 +259,7 @@ module Marketplace
 
     # @listing_ids comma separated list of listings identifiers
     def get_deliveryoptions(listing_ids, country_code)
-      get_api_response("/listings/#{listing_ids}/shippingmethods/#{country_code}", true)
+      get_api_response("/listings/#{listing_ids}/shippingmethods/#{country_code}", '', true)
     end
 
     # get listings for a product(s)
