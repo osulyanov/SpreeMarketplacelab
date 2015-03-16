@@ -105,7 +105,7 @@ module Marketplace
 
       if marketplace_product['attributes'] != nil
         marketplace_product['attributes'].each do |attr|
-          spree_product.set_property(attr['name'], attr['value'])
+          spree_product.set_property(attr['name'], attr['value'].truncate(250, omission: '...'))
         end
       end
 
