@@ -128,11 +128,21 @@ module Marketplace
 
       marketplace_product["images"].each { |tmpl_img|
         tmpl_uri = URI.parse(tmpl_img["image_url"])
+
+        if tmpl_uri == nil || tmpl_uri.scheme == nil
+          logger.warn "Incorrect image url: #{tmpl_img["image_url"]}, spree product id: #{spree_product.id}, tmpl store product id: #{marketplace_product["store_product_id"]}"
+          next
+        end
+
         tmpl_file_name = File.basename(tmpl_uri.path)
 
         if !file_names.include? tmpl_file_name
-          image = Spree::Image.create!({:attachment => tmpl_uri, :viewable => spree_product})
-          spree_product.images << image
+          begin
+            image = Spree::Image.create!({:attachment => tmpl_uri, :viewable => spree_product})
+            spree_product.images << image
+          rescue
+            logger.warn "Error adding image to spree, image url: #{tmpl_img["image_url"]}, spree product id: #{spree_product.id}, tmpl store product id: #{marketplace_product["store_product_id"]}"
+          end
         end
       }
     end
