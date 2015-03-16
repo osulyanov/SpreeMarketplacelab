@@ -55,7 +55,7 @@ module Marketplace
 
       logger.info "TMPL call finished, took #{s.elapsed_time}"
 
-      spree_product = Spree::Product.includes(:variant_images).includes(:taxons).includes(:master).joins(:variant_images).joins(:master).find_by("spree_variants.sku = ?", store_product_id)
+      spree_product = Spree::Product.eager_load(:taxons).eager_load(:master).eager_load(:variant_images).find_by("spree_variants.sku = ?", store_product_id)
 
       logger.info "Spree product read, took #{s.elapsed_time}"
 
@@ -138,7 +138,7 @@ module Marketplace
 
         if !file_names.include? tmpl_file_name
           begin
-            image = Spree::Image.create!({:attachment => tmpl_uri, :viewable => spree_product})
+            image = Spree::Image.create!({ :attachment => tmpl_uri, :viewable => spree_product })
             spree_product.images << image
           rescue
             logger.warn "Error adding image to spree, image url: #{tmpl_img["image_url"]}, spree product id: #{spree_product.id}, tmpl store product id: #{marketplace_product["store_product_id"]}"
@@ -169,8 +169,8 @@ module Marketplace
 
     def dispatch_order(store_order_id)
       dispatch_model = {
-        StoreOrderId: store_order_id,
-        DispatchDate: Time.now.strftime("%Y-%m-%d %H:%M")
+          StoreOrderId: store_order_id,
+          DispatchDate: Time.now.strftime("%Y-%m-%d %H:%M")
       }.to_json
 
       post_api_response("/orders/#{store_order_id}/dispatch", "", dispatch_model)
@@ -182,50 +182,50 @@ module Marketplace
 
     def create_listing(spree_product, spree_user, sub_condition)
       listing_model = {
-        SKU: spree_product.sku,
-        StoreProductId: spree_product.sku,
-        Upc: spree_product.sku,
-        Title: spree_product.name,
-        ItemNote: spree_product.description,
-        Condition: "Used",
-        SubCondition: sub_condition,
-        DispatchedFrom: "GB",
-        DispatchedTo: "UK",
-        QuantityAvailable: 1,
-        ListingPrices: [
-          {
-            Amount: spree_product.price,
-            CurrencyType: "GBP",
-            ListingPriceId: 3 # AskingPrice
+          SKU: spree_product.sku,
+          StoreProductId: spree_product.sku,
+          Upc: spree_product.sku,
+          Title: spree_product.name,
+          ItemNote: spree_product.description,
+          Condition: "Used",
+          SubCondition: sub_condition,
+          DispatchedFrom: "GB",
+          DispatchedTo: "UK",
+          QuantityAvailable: 1,
+          ListingPrices: [
+              {
+                  Amount: spree_product.price,
+                  CurrencyType: "GBP",
+                  ListingPriceId: 3 # AskingPrice
+              },
+              {
+                  Amount: spree_product.retail_price,
+                  CurrencyType: "GBP",
+                  ListingPriceId: 4 # RetailPrice
+              },
+              {
+                  Amount: spree_product.best_offer_price,
+                  CurrencyType: "GBP",
+                  ListingPriceId: 5 # BestOfferPrice
+              }
+          ],
+          DeliveryPrices: nil,
+          ProductIdType: "UPC",
+          CustomAttributes: {
+              Width: spree_product.width.to_s,
+              Height: spree_product.height.to_s,
+              Depth: spree_product.depth.to_s,
+              Weight: spree_product.weight.to_s,
           },
-          {
-              Amount: spree_product.retail_price,
-              CurrencyType: "GBP",
-              ListingPriceId: 4 # RetailPrice
-          },
-          {
-              Amount: spree_product.best_offer_price,
-              CurrencyType: "GBP",
-              ListingPriceId: 5 # BestOfferPrice
-          }
-        ],
-        DeliveryPrices: nil,
-        ProductIdType: "UPC",
-        CustomAttributes: {
-          Width: spree_product.width.to_s,
-          Height: spree_product.height.to_s,
-          Depth: spree_product.depth.to_s,
-          Weight: spree_product.weight.to_s,
-        },
-        Category: spree_product.major_category,
-        Images: [
-          {
-            ImageUrl: spree_product.images[0].attachment.url,
-            ImageType: "Large"
-          }
-        ],
-        StoreCustomerId: spree_user.email,
-        Comment: "From Furniture"
+          Category: spree_product.major_category,
+          Images: [
+              {
+                  ImageUrl: spree_product.images[0].attachment.url,
+                  ImageType: "Large"
+              }
+          ],
+          StoreCustomerId: spree_user.email,
+          Comment: "From Furniture"
       }.to_json
 
       post_api_response("/listings/selleremail", "sellerEmail=#{spree_user.email}", listing_model)
@@ -295,224 +295,203 @@ module Marketplace
 
     private
 
-      # some marketplacelab constants
-      COUNTRY_ID_UK = 235 # country United Kingdom
-      LISTING_CONDITION_ID_NEW = 1 # listing condition New
-      QUANTITY_UNIT_TYPE_ID = 1 # quantity unit type Item
-      CURRENCY_TYPE_ID_GBP = 826 # currency type GBP
-      PAYMENT_STATUS_PAID = 30 # payment status Paid
-      SHIPPING_STATUS_PENDING = 10 # shipping status Pending
+    # some marketplacelab constants
+    COUNTRY_ID_UK = 235 # country United Kingdom
+    LISTING_CONDITION_ID_NEW = 1 # listing condition New
+    QUANTITY_UNIT_TYPE_ID = 1 # quantity unit type Item
+    CURRENCY_TYPE_ID_GBP = 826 # currency type GBP
+    PAYMENT_STATUS_PAID = 30 # payment status Paid
+    SHIPPING_STATUS_PENDING = 10 # shipping status Pending
 
-      def convert_to_order_adjustment(spree_order, adjustment_type)
-        adjustment_dto = {
-            CustomerEmail: spree_order.email,
-            StoreOrderId: spree_order.number,
-        }
+    def convert_to_order_adjustment(spree_order, adjustment_type)
+      adjustment_dto = {
+          CustomerEmail: spree_order.email,
+          StoreOrderId: spree_order.number,
+      }
 
-        adjustment_dto[:Adjustments] = []
-        spree_order.line_items.each { |item|
-          adjustment_dto[:Adjustments].push({
-                                                StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
-                                                Quantity: item.quantity,
-                                                Price: item.price,
-                                                AdjustmentType: adjustment_type
-                                            })
-        }
+      adjustment_dto[:Adjustments] = []
+      spree_order.line_items.each { |item|
+        adjustment_dto[:Adjustments].push({
+                                              StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
+                                              Quantity: item.quantity,
+                                              Price: item.price,
+                                              AdjustmentType: adjustment_type
+                                          })
+      }
 
-        return adjustment_dto.to_json
-      end
+      return adjustment_dto.to_json
+    end
 
-      def convert_to_marketplace_order(spree_order)
-        order_dto = {
-            StoreOrderId: spree_order.number,
-            SellerOrderId: spree_order.number,
-            CustomerEmail: spree_order.email,
-            CustomerPhoneNumber: spree_order.billing_address.phone,
-            CustomerTitle: "",
-            CustomerFirstName: spree_order.shipping_address.firstname,
-            CustomerLastName: spree_order.shipping_address.lastname,
-            StoreOrderDate: spree_order.created_at,
-        }
+    def convert_to_marketplace_order(spree_order)
+      order_dto = {
+          StoreOrderId: spree_order.number,
+          SellerOrderId: spree_order.number,
+          CustomerEmail: spree_order.email,
+          CustomerPhoneNumber: spree_order.billing_address.phone,
+          CustomerTitle: "",
+          CustomerFirstName: spree_order.shipping_address.firstname,
+          CustomerLastName: spree_order.shipping_address.lastname,
+          StoreOrderDate: spree_order.created_at,
+      }
 
-        order_dto[:OrderItems] = []
+      order_dto[:OrderItems] = []
 
-        spree_order.line_items.each { |item|
-          if item.respond_to?(:listing)
-            listing = item.listing
-          else
-            listing_id = Spree::Product.joins(:master).find_by("spree_variants.id=?", item.variant_id).property("ListingId")
-            listing = get_listing(listing_id)
-          end
-
-          order_dto[:OrderItems].push({
-                                          ListingId: listing['id'],
-                                          PaymentStatus: PAYMENT_STATUS_PAID,
-                                          ShippingStatus: SHIPPING_STATUS_PENDING,
-                                          Quantity: item.quantity,
-                                          Price: item.price,
-                                          StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
-                                          StoreProductId: item.variant.sku,
-                                          SellerId: listing['seller_id'],
-                                          ListingDispatchFromCountryId: COUNTRY_ID_UK,
-                                          ListingConditionId: LISTING_CONDITION_ID_NEW,
-                                          QuantityUnitTypeId: QUANTITY_UNIT_TYPE_ID,
-                                          CurrencyType: CURRENCY_TYPE_ID_GBP,
-                                          DeliveryName: spree_order.shipping_address.firstname + " " + spree_order.shipping_address.lastname,
-                                          DeliveryAddress1: spree_order.shipping_address.address1,
-                                          DeliveryAddress2: spree_order.shipping_address.address2,
-                                          DeliveryCountry: spree_order.shipping_address.country.iso,
-                                          DeliveryCounty: spree_order.shipping_address.state_name,
-                                          DeliveryTown: spree_order.shipping_address.city,
-                                          DeliveryPostcode: spree_order.shipping_address.zipcode,
-                                          DeliveryCost: spree_order.ship_total,
-                                          ShippingType: get_shipping_type(spree_order, item)
-                                      })
-        }
-
-        return order_dto.to_json
-      end
-
-      def get_shipping_type(spree_order, order_item)
-        shipping_method = nil
-        spree_order.shipments[0].shipping_rates.each do |rate|
-          if rate.selected
-            shipping_method = rate.shipping_method
-          end
+      spree_order.line_items.each { |item|
+        if item.respond_to?(:listing)
+          listing = item.listing
+        else
+          listing_id = Spree::Product.joins(:master).find_by("spree_variants.id=?", item.variant_id).property("ListingId")
+          listing = get_listing(listing_id)
         end
 
-        if shipping_method != nil
-          return /(\d+)/.match(shipping_method.admin_name)[0].to_i
+        order_dto[:OrderItems].push({
+                                        ListingId: listing['id'],
+                                        PaymentStatus: PAYMENT_STATUS_PAID,
+                                        ShippingStatus: SHIPPING_STATUS_PENDING,
+                                        Quantity: item.quantity,
+                                        Price: item.price,
+                                        StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
+                                        StoreProductId: item.variant.sku,
+                                        SellerId: listing['seller_id'],
+                                        ListingDispatchFromCountryId: COUNTRY_ID_UK,
+                                        ListingConditionId: LISTING_CONDITION_ID_NEW,
+                                        QuantityUnitTypeId: QUANTITY_UNIT_TYPE_ID,
+                                        CurrencyType: CURRENCY_TYPE_ID_GBP,
+                                        DeliveryName: spree_order.shipping_address.firstname + " " + spree_order.shipping_address.lastname,
+                                        DeliveryAddress1: spree_order.shipping_address.address1,
+                                        DeliveryAddress2: spree_order.shipping_address.address2,
+                                        DeliveryCountry: spree_order.shipping_address.country.iso,
+                                        DeliveryCounty: spree_order.shipping_address.state_name,
+                                        DeliveryTown: spree_order.shipping_address.city,
+                                        DeliveryPostcode: spree_order.shipping_address.zipcode,
+                                        DeliveryCost: spree_order.ship_total,
+                                        ShippingType: get_shipping_type(spree_order, item)
+                                    })
+      }
+
+      return order_dto.to_json
+    end
+
+    def get_shipping_type(spree_order, order_item)
+      shipping_method = nil
+      spree_order.shipments[0].shipping_rates.each do |rate|
+        if rate.selected
+          shipping_method = rate.shipping_method
         end
       end
 
-      def logger
-        @logger ||= MarketplaceLogger.new
+      if shipping_method != nil
+        return /(\d+)/.match(shipping_method.admin_name)[0].to_i
+      end
+    end
+
+    def logger
+      @logger ||= MarketplaceLogger.new
+    end
+
+    def subscribe_to(subscription_type)
+      if subscription_type == :listing_created then
+        payload = {
+            HookSubscriptionType: 6,
+            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
+        }.to_json
+        api_hooks_url = '/hooks'
       end
 
-      def subscribe_to(subscription_type)
-        if subscription_type == :listing_created then
-          payload = {
-              HookSubscriptionType: 6,
-              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
-          }.to_json
-          api_hooks_url = '/hooks'
-        end
-
-        if subscription_type == :listing_updated then
-          payload = {
-              HookSubscriptionType: 7,
-              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
-          }.to_json
-          api_hooks_url = '/hooks'
-        end
-
-        if subscription_type == :product_created then
-          payload = {
-              HookSubscriptionType: 10,
-              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
-          }.to_json
-          api_hooks_url = '/hooks'
-        end
-
-        if subscription_type == :product_updated then
-          payload = {
-              HookSubscriptionType: 11,
-              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
-          }.to_json
-          api_hooks_url = '/hooks'
-        end
-
-        if subscription_type == :order_allocated then
-          payload = {
-              HookSubscriptionType: 2,
-              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order?token=' + @spree_auth_token
-          }.to_json
-          api_hooks_url = '/hooks'
-        end
-
-        if subscription_type == :order_dispatched then
-          payload = {
-              HookSubscriptionType: 5,
-              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_dispatched?token=' + @spree_auth_token
-          }.to_json
-          api_hooks_url = '/hooks'
-        end
-
-        if subscription_type == :order_unable_to_dispatch then
-          payload = {
-              HookSubscriptionType: 13,
-              TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_unable_to_dispatch?token=' + @spree_auth_token
-          }.to_json
-          api_hooks_url = '/hooks'
-        end
-
-        post_api_response(api_hooks_url, '', payload)
+      if subscription_type == :listing_updated then
+        payload = {
+            HookSubscriptionType: 7,
+            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
+        }.to_json
+        api_hooks_url = '/hooks'
       end
 
-      def post_api_response(endpoint_url, params = '', json = '')
-        if params != ''
-          params += "&"
-        end
-
-        params += "apikey=#{@api_key}&accountkey=#{@account_key}"
-
-        url = "#{@api_base_url}#{@api_version}#{endpoint_url}?#{params}"
-        logger.info "Marketplace POST #{url} #{json}"
-
-        headers = @headers
-        headers["Content-Type"] = "application/json"
-
-        s = ::Stopwatch.new
-        response = ::HTTParty.post(url, verify: false, body: json, headers: headers)
-        logger.info "Marketplace POST response code=#{response.code} content-length=#{response.headers['content-length']}, took #{s.elapsed_time}"
-
-        return (response.code >= 200 || response.code < 300)
+      if subscription_type == :product_created then
+        payload = {
+            HookSubscriptionType: 10,
+            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
+        }.to_json
+        api_hooks_url = '/hooks'
       end
 
-      def get_api_response(endpoint_url, params = '', hash_result = false)
-        if params != ''
-          params += "&"
-        end
-
-        params += "apikey=#{@api_key}&accountkey=#{@account_key}"
-
-        url = "#{@api_base_url}#{@api_version}#{endpoint_url}?#{params}"
-        logger.info "Marketplace GET #{url}"
-
-        s = ::Stopwatch.new
-        response = ::HTTParty.get(url, verify: false, headers: @headers)
-        logger.info "Marketplace GET response code=#{response.code} content-length=#{response.headers['content-length']}, took #{s.elapsed_time}"
-
-        return (hash_result ? convert_hash_to_ruby_style(response) : convert_array_to_ruby_style(response)) if response && response.code == 200
+      if subscription_type == :product_updated then
+        payload = {
+            HookSubscriptionType: 11,
+            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
+        }.to_json
+        api_hooks_url = '/hooks'
       end
 
-      def convert_array_to_ruby_style(camel_case_arr)
-        ruby_arr = []
-
-        camel_case_arr.each do |arr_item|
-          ruby_case_hash = {}
-          arr_item.each_pair do |key, val|
-            # if value is a Hash we convert keys to ruby_style
-            val = convert_hash_to_ruby_style val if val.is_a? Hash
-
-            # if value is an Array we iterate over it and change items
-            if val.is_a? Array
-              val.map! do |item|
-                item = convert_hash_to_ruby_style item if item.is_a? Hash
-              end
-            end
-
-            # add converted hash pair to new has
-            ruby_case_hash.merge!({get_underscored_key(key) => val})
-          end
-          ruby_arr.push(ruby_case_hash)
-        end
-        ruby_arr
+      if subscription_type == :order_allocated then
+        payload = {
+            HookSubscriptionType: 2,
+            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order?token=' + @spree_auth_token
+        }.to_json
+        api_hooks_url = '/hooks'
       end
 
-      def convert_hash_to_ruby_style(camel_case_hash)
+      if subscription_type == :order_dispatched then
+        payload = {
+            HookSubscriptionType: 5,
+            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_dispatched?token=' + @spree_auth_token
+        }.to_json
+        api_hooks_url = '/hooks'
+      end
+
+      if subscription_type == :order_unable_to_dispatch then
+        payload = {
+            HookSubscriptionType: 13,
+            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_unable_to_dispatch?token=' + @spree_auth_token
+        }.to_json
+        api_hooks_url = '/hooks'
+      end
+
+      post_api_response(api_hooks_url, '', payload)
+    end
+
+    def post_api_response(endpoint_url, params = '', json = '')
+      if params != ''
+        params += "&"
+      end
+
+      params += "apikey=#{@api_key}&accountkey=#{@account_key}"
+
+      url = "#{@api_base_url}#{@api_version}#{endpoint_url}?#{params}"
+      logger.info "Marketplace POST #{url} #{json}"
+
+      headers = @headers
+      headers["Content-Type"] = "application/json"
+
+      s = ::Stopwatch.new
+      response = ::HTTParty.post(url, verify: false, body: json, headers: headers)
+      logger.info "Marketplace POST response code=#{response.code} content-length=#{response.headers['content-length']}, took #{s.elapsed_time}"
+
+      return (response.code >= 200 || response.code < 300)
+    end
+
+    def get_api_response(endpoint_url, params = '', hash_result = false)
+      if params != ''
+        params += "&"
+      end
+
+      params += "apikey=#{@api_key}&accountkey=#{@account_key}"
+
+      url = "#{@api_base_url}#{@api_version}#{endpoint_url}?#{params}"
+      logger.info "Marketplace GET #{url}"
+
+      s = ::Stopwatch.new
+      response = ::HTTParty.get(url, verify: false, headers: @headers)
+      logger.info "Marketplace GET response code=#{response.code} content-length=#{response.headers['content-length']}, took #{s.elapsed_time}"
+
+      return (hash_result ? convert_hash_to_ruby_style(response) : convert_array_to_ruby_style(response)) if response && response.code == 200
+    end
+
+    def convert_array_to_ruby_style(camel_case_arr)
+      ruby_arr = []
+
+      camel_case_arr.each do |arr_item|
         ruby_case_hash = {}
-        camel_case_hash.each_pair do |key, val|
+        arr_item.each_pair do |key, val|
           # if value is a Hash we convert keys to ruby_style
           val = convert_hash_to_ruby_style val if val.is_a? Hash
 
@@ -524,14 +503,35 @@ module Marketplace
           end
 
           # add converted hash pair to new has
-          ruby_case_hash.merge!({get_underscored_key(key) => val})
+          ruby_case_hash.merge!({ get_underscored_key(key) => val })
         end
-        ruby_case_hash
+        ruby_arr.push(ruby_case_hash)
       end
+      ruby_arr
+    end
 
-      def get_underscored_key(key)
-        underscored_key = ActiveSupport::Inflector.underscore(key)
-        underscored_key = underscored_key.downcase.tr(" ", "_")
+    def convert_hash_to_ruby_style(camel_case_hash)
+      ruby_case_hash = {}
+      camel_case_hash.each_pair do |key, val|
+        # if value is a Hash we convert keys to ruby_style
+        val = convert_hash_to_ruby_style val if val.is_a? Hash
+
+        # if value is an Array we iterate over it and change items
+        if val.is_a? Array
+          val.map! do |item|
+            item = convert_hash_to_ruby_style item if item.is_a? Hash
+          end
+        end
+
+        # add converted hash pair to new has
+        ruby_case_hash.merge!({ get_underscored_key(key) => val })
       end
+      ruby_case_hash
+    end
+
+    def get_underscored_key(key)
+      underscored_key = ActiveSupport::Inflector.underscore(key)
+      underscored_key = underscored_key.downcase.tr(" ", "_")
+    end
   end
 end
