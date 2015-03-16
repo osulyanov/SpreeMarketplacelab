@@ -18,7 +18,7 @@ module Marketplace
       @headers = {
           "X-MarketplaceLab-User-Agent-Application-Name" => @appName,
           "X-MarketplaceLab-User-Agent-Language" => "Ruby #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}",
-          "X-MarketplaceLab-User-Agent-get_deliveryoptionsApplication-Version" => "master"
+          "X-MarketplaceLab-User-Agent-Application-Version" => "master"
       }
 
     end
@@ -128,11 +128,21 @@ module Marketplace
 
       marketplace_product["images"].each { |tmpl_img|
         tmpl_uri = URI.parse(tmpl_img["image_url"])
+
+        if tmpl_uri == nil || tmpl_uri.scheme == nil
+          logger.warn "Incorrect image url: #{tmpl_img["image_url"]}, spree product id: #{spree_product.id}, tmpl store product id: #{marketplace_product["store_product_id"]}"
+          next
+        end
+
         tmpl_file_name = File.basename(tmpl_uri.path)
 
         if !file_names.include? tmpl_file_name
-          image = Spree::Image.create!({:attachment => tmpl_uri, :viewable => spree_product})
-          spree_product.images << image
+          begin
+            image = Spree::Image.create!({:attachment => tmpl_uri, :viewable => spree_product})
+            spree_product.images << image
+          rescue
+            logger.warn "Error adding image to spree, image url: #{tmpl_img["image_url"]}, spree product id: #{spree_product.id}, tmpl store product id: #{marketplace_product["store_product_id"]}"
+          end
         end
       }
     end
@@ -259,7 +269,7 @@ module Marketplace
 
     # @listing_ids comma separated list of listings identifiers
     def get_deliveryoptions(listing_ids, country_code)
-      get_api_response("/listings/#{listing_ids}/shippingmethods/#{country_code}", '', true)
+      get_api_response("/listings/#{listing_ids}/shippingmethods/#{country_code}")
     end
 
     # get listings for a product(s)
