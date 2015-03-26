@@ -15,7 +15,7 @@ module Spree
 
         if product_sku.nil?
           marketplace_id = request.POST["MarketplaceId"]
-          product_sku = "tfm_#{marketplace_id}"
+          product_sku = marketplace_api.generate_store_product_id marketplace_id
           result = marketplace_api.put_product_spi marketplace_id, product_sku
           logger.info "result=#{result.inspect}"
         end

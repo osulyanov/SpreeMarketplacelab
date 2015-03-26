@@ -147,6 +147,10 @@ module Marketplace
       }
     end
 
+    def generate_store_product_id marketplace_id
+      "marketplace_#{marketplace_id}"
+    end
+
     def put_product_spi(marketplace_id, store_product_id)
       put_api_response("/products", "marketplaceId=#{marketplace_id}&storeProductId=#{store_product_id}", false)
     end
