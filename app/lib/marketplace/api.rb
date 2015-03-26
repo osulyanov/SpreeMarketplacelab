@@ -147,6 +147,10 @@ module Marketplace
       }
     end
 
+    def put_product_spi(marketplace_id, store_product_id)
+      put_api_response("/products", "marketplaceId=#{marketplace_id}&storeProductId=#{store_product_id}", false)
+    end
+
     def get_products(store_product_ids)
       get_api_response("/products/#{store_product_ids}", "", false)
     end
@@ -447,6 +451,26 @@ module Marketplace
       end
 
       post_api_response(api_hooks_url, '', payload)
+    end
+
+    def put_api_response(endpoint_url, params = '', json = '')
+      if params != ''
+        params += "&"
+      end
+
+      params += "apikey=#{@api_key}&accountkey=#{@account_key}"
+
+      url = "#{@api_base_url}#{@api_version}#{endpoint_url}?#{params}"
+      logger.info "Marketplace PUT #{url} #{json}"
+
+      headers = @headers
+      headers["Content-Type"] = "application/json"
+
+      s = ::Stopwatch.new
+      response = ::HTTParty.put(url, verify: false, body: json, headers: headers)
+      logger.info "Marketplace PUT response code=#{response.code} content-length=#{response.headers['content-length']}, took #{s.elapsed_time}"
+
+      return (response.code >= 200 || response.code < 300)
     end
 
     def post_api_response(endpoint_url, params = '', json = '')

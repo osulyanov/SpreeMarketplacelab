@@ -10,7 +10,15 @@ module Spree
 
         stopwatch = ::Stopwatch.new
 
-        price = request.POST['Price']['Amount'].to_f if request.POST['Price'] != nil
+        price = request.POST['Price']['Amount'].to_f unless price.nil?
+        price = 0.0 if price.nil?
+
+        if product_sku.nil?
+          marketplace_id = request.POST["MarketplaceId"]
+          product_sku = "tfm_#{marketplace_id}"
+          result = marketplace_api.put_product_spi marketplace_id, product_sku
+          logger.info "result=#{result.inspect}"
+        end
 
         spree_product = marketplace_api.create_or_update_product(product_sku, price)
 
@@ -81,7 +89,7 @@ module Spree
             logger.error "Failed to ship StoreOrderId " + store_order_id + " but payment has been taken and udpated. ** this will need to be fixed manually."
           end
         else
-            logger.error "Failed to find a pending status payment to capture for StoreOrderId : " + store_order_id + " - ** this will need to be fixing manually."
+          logger.error "Failed to find a pending status payment to capture for StoreOrderId : " + store_order_id + " - ** this will need to be fixing manually."
         end
 
       end
@@ -102,9 +110,9 @@ module Spree
       end
 
       private
-        def logger
-          @logger ||= MarketplaceLogger.new
-        end
+      def logger
+        @logger ||= MarketplaceLogger.new
+      end
     end
   end
 end
