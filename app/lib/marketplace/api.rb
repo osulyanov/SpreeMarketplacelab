@@ -372,7 +372,7 @@ module Marketplace
                                         DeliveryCounty: spree_order.shipping_address.state_name,
                                         DeliveryTown: spree_order.shipping_address.city,
                                         DeliveryPostcode: spree_order.shipping_address.zipcode,
-                                        DeliveryCost: spree_order.ship_total,
+                                        DeliveryCost: 0,
                                         ShippingType: get_shipping_type(spree_order, item)
                                     })
       }
