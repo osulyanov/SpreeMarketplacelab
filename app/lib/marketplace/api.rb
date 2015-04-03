@@ -353,14 +353,14 @@ module Marketplace
         end
 
         order_dto[:OrderItems].push({
-                                        ListingId: listing['id'],
+                                        ListingId: listing['id'] || listing[:id],
                                         PaymentStatus: PAYMENT_STATUS_PAID,
                                         ShippingStatus: SHIPPING_STATUS_PENDING,
                                         Quantity: item.quantity,
                                         Price: item.price,
                                         StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
                                         StoreProductId: item.variant.sku,
-                                        SellerId: listing['seller_id'],
+                                        SellerId: listing['seller_id'] || listing[:seller_id],
                                         ListingDispatchFromCountryId: COUNTRY_ID_UK,
                                         ListingConditionId: LISTING_CONDITION_ID_NEW,
                                         QuantityUnitTypeId: QUANTITY_UNIT_TYPE_ID,
