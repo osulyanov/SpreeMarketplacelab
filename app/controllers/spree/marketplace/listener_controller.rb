@@ -11,7 +11,7 @@ module Spree
         stopwatch = ::Stopwatch.new
 
         price = request.POST['Price']['Amount'].to_f unless price.nil?
-        price = 0.0 if price.nil?
+        # price = 0.0 if price.nil?
 
         if product_sku.nil?
           marketplace_id = request.POST["MarketplaceId"]

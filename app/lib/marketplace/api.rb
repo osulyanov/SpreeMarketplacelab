@@ -40,8 +40,6 @@ module Marketplace
     #   spree_product -- a reference to a product
     #   is_new_product_created -- boolean, would be true in case a new product was just created
     def create_or_update_product(store_product_id, price)
-      # return nil if price == nil
-
       s = ::Stopwatch.new
 
       tmpl_products = get_products(store_product_id)
@@ -62,7 +60,7 @@ module Marketplace
       is_new_product_created = false
 
       if spree_product == nil
-        return nil if price == nil
+        price = 0.0 if price.nil?
 
         logger.info "Product for SKU #{store_product_id} not found in spree, creating a new one, took #{s.elapsed_time}"
 
