@@ -153,6 +153,10 @@ module Marketplace
       put_api_response("/products", "marketplaceId=#{marketplace_id}&storeProductId=#{store_product_id}", false)
     end
 
+    def get_product_categories(store_product_id)
+      get_api_response("/products/#{store_product_id}/categories", "", false)
+    end
+
     def get_products(store_product_ids)
       get_api_response("/products/#{store_product_ids}", "", false)
     end
