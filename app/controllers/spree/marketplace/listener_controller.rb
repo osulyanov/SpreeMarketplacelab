@@ -74,7 +74,7 @@ module Spree
           if payment.state == 'pending'
             payment.capture!
             processed = true
-            logger.info "Successully captured payment for StoreOrderId " + store_order_id
+            logger.info "Successfully captured payment for StoreOrderId " + store_order_id
             break;
           end
         end
@@ -86,10 +86,10 @@ module Spree
             shipment.ship!
             logger.info "Successfully shipped StoreOrderId " + store_order_id
           else
-            logger.error "Failed to ship StoreOrderId " + store_order_id + " but payment has been taken and udpated. ** this will need to be fixed manually."
+            logger.error "ORDER ERROR: Failed to ship StoreOrderId " + store_order_id + " but payment has been taken and udpated. ** this will need to be fixed manually."
           end
         else
-          logger.error "Failed to find a pending status payment to capture for StoreOrderId : " + store_order_id + " - ** this will need to be fixing manually."
+          logger.error "ORDER ERROR: Failed to find a pending status payment to capture for StoreOrderId : " + store_order_id + " - ** this will need to be fixing manually."
         end
 
       end
@@ -105,7 +105,7 @@ module Spree
           order.cancel!
           logger.info "Successfully cancelled an order, StoreOrderId #{store_order_id}."
         else
-          logger.error "Order not found, StoreOrderId #{store_order_id}."
+          logger.error "ORDER ERROR: Order not found, StoreOrderId #{store_order_id}."
         end
       end
 
