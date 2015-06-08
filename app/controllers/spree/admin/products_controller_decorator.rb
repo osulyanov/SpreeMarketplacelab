@@ -4,14 +4,14 @@ Spree::Admin::ProductsController.class_eval do
 
   def notify_product_created
     # @product
-    api = Marketplace::Api.instance
-    api.create_product(@product)
+    # api = Marketplace::Api.instance
+    # api.create_product(@product)
   end
 
   def notify_product_updated
     # @product
-    api = Marketplace::Api.instance
-    api.update_product(@product)
+    # api = Marketplace::Api.instance
+    # api.update_product(@product)
   end
 
 end
