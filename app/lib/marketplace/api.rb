@@ -355,7 +355,7 @@ module Marketplace
         end
 
         order_dto[:OrderItems].push({
-                                        ListingId: listing['id'] || listing[:id],
+                                        ListingId: listing['listing_id'] || listing[:listing_id],
                                         PaymentStatus: PAYMENT_STATUS_PAID,
                                         ShippingStatus: SHIPPING_STATUS_PENDING,
                                         Quantity: item.quantity,
