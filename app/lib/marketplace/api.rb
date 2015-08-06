@@ -102,8 +102,13 @@ module Marketplace
       logger.info "Product saved, SKU: #{store_product_id}, took #{s.elapsed_time}"
 
       if marketplace_product['attributes'] != nil
+        properties = {}
         marketplace_product['attributes'].each do |attr|
-          spree_product.set_property(attr['name'], attr['value'].truncate(250, omission: '...'))
+          properties[attr['name']] = [] unless properties[attr['name']].present?
+          properties[attr['name']] << attr['value']
+        end
+        properties.each do |name, values|
+          spree_product.set_property(name, values.join(', ').truncate(250, omission: '...'))
         end
       end
 
