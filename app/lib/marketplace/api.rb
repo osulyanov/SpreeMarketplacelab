@@ -174,6 +174,11 @@ module Marketplace
       get_api_response("/sellers/#{seller_id}", "", false)
     end
 
+    def put_seller(seller_data)
+      seller_string = CGI.unescape seller_data.to_query
+      put_api_response("/sellers", seller_string, false)
+    end
+
     def check_stock(store_product_id)
       get_api_response("/listings/#{store_product_id}/availablestock", "", false)
     end
