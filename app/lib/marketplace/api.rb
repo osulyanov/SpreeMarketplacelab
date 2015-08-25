@@ -486,7 +486,7 @@ module Marketplace
       response = ::HTTParty.put(url, verify: false, body: json, headers: headers)
       logger.info "Marketplace PUT response code=#{response.code} content-length=#{response.headers['content-length']}, took #{s.elapsed_time}"
 
-      return (response.code >= 200 || response.code < 300)
+      return (response.code >= 200 && response.code < 300)
     end
 
     def post_api_response(endpoint_url, params = '', json = '')
