@@ -175,8 +175,7 @@ module Marketplace
     end
 
     def put_seller(seller_data)
-      seller_string = CGI.unescape seller_data.to_query
-      put_api_response("/sellers", seller_string, false)
+      put_api_response("/sellers", "", seller_data.to_json, true)
     end
 
     def check_stock(store_product_id)
@@ -469,7 +468,7 @@ module Marketplace
       post_api_response(api_hooks_url, '', payload)
     end
 
-    def put_api_response(endpoint_url, params = '', json = '')
+    def put_api_response(endpoint_url, params = '', json = '', return_response = false)
       if params != ''
         params += "&"
       end
@@ -486,7 +485,13 @@ module Marketplace
       response = ::HTTParty.put(url, verify: false, body: json, headers: headers)
       logger.info "Marketplace PUT response code=#{response.code} content-length=#{response.headers['content-length']}, took #{s.elapsed_time}"
 
-      return (response.code >= 200 && response.code < 300)
+      success = response.code >= 200 && response.code < 300
+
+      if return_response
+        return success, response.parsed_response
+      else
+        success
+      end
     end
 
     def post_api_response(endpoint_url, params = '', json = '')
