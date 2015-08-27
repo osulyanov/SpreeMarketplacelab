@@ -178,6 +178,10 @@ module Marketplace
       put_api_response("/sellers", "", seller_data.to_json, true)
     end
 
+    def post_seller_verify(seller_id, verification_token)
+      post_api_response("/sellers/#{seller_id}/verify", "", { 'SellerVerificationToken' => verification_token }.to_json)
+    end
+
     def check_stock(store_product_id)
       get_api_response("/listings/#{store_product_id}/availablestock", "", false)
     end
