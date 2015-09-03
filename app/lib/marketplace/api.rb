@@ -286,8 +286,8 @@ module Marketplace
       post_api_response('/' + spree_order.number + '/adjustment', '', marketplace_order_adjustment)
     end
 
-    def notify(event_name, data)
-      notify_listeners(event_name, data)
+    def notify(event_name, *args)
+      notify_listeners(event_name, *args)
     end
 
     # @listing_ids comma separated list of listings identifiers

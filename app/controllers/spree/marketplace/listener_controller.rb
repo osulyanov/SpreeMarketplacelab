@@ -48,9 +48,18 @@ module Spree
       end
 
       def order
-        store_order_id = request.POST["StoreOrderId"]
+        # Parameters: {
+        #   "StoreOrderId"=>"R667100085",
+        #   "StoreOrderItemIds"=>["R667100085-405"],
+        #   "token"=>"3a45b2485dbc8c388364c7ae38413a188c4f17a679dc3f62",
+        #   "listener"=>{
+        #     "StoreOrderId"=>"R667100085",
+        #     "StoreOrderItemIds"=>["R667100085-405"]
+        #   }
+        # }
 
-        order = Spree::Order.find_by!(number: store_order_id)
+        marketplace_api = ::Marketplace::Api.instance
+        marketplace_api.notify(:order_dispatched, request.POST["StoreOrderId"], request.POST["StoreOrderItemIds"])
 
         @result = "ok"
       end
