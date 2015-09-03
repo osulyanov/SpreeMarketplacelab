@@ -13,7 +13,7 @@ module Spree
         price = request.POST['Price']['Amount'].to_f unless price.nil?
         # price = 0.0 if price.nil?
 
-        unless product_sku.present?
+        if product_sku.nil?
           marketplace_id = request.POST["MarketplaceId"]
           product_sku = marketplace_api.generate_store_product_id marketplace_id
           result = marketplace_api.put_product_spi marketplace_id, product_sku
@@ -48,18 +48,9 @@ module Spree
       end
 
       def order
-        # Parameters: {
-        #   "StoreOrderId"=>"R667100085",
-        #   "StoreOrderItemIds"=>["R667100085-405"],
-        #   "token"=>"3a45b2485dbc8c388364c7ae38413a188c4f17a679dc3f62",
-        #   "listener"=>{
-        #     "StoreOrderId"=>"R667100085",
-        #     "StoreOrderItemIds"=>["R667100085-405"]
-        #   }
-        # }
+        store_order_id = request.POST["StoreOrderId"]
 
-        marketplace_api = ::Marketplace::Api.instance
-        marketplace_api.notify(:order_dispatched, request.POST["StoreOrderId"], request.POST["StoreOrderItemIds"])
+        order = Spree::Order.find_by!(number: store_order_id)
 
         @result = "ok"
       end
@@ -83,7 +74,7 @@ module Spree
           if payment.state == 'pending'
             payment.capture!
             processed = true
-            logger.info "Successfully captured payment for StoreOrderId " + store_order_id
+            logger.info "Successully captured payment for StoreOrderId " + store_order_id
             break;
           end
         end
@@ -95,12 +86,14 @@ module Spree
             shipment.ship!
             logger.info "Successfully shipped StoreOrderId " + store_order_id
           else
-            logger.error "ORDER ERROR: Failed to ship StoreOrderId " + store_order_id + " but payment has been taken and udpated. ** this will need to be fixed manually."
+            logger.error "Failed to ship StoreOrderId " + store_order_id + " but payment has been taken and udpated. ** this will need to be fixed manually."
           end
         else
-          logger.error "ORDER ERROR: Failed to find a pending status payment to capture for StoreOrderId : " + store_order_id + " - ** this will need to be fixing manually."
+          logger.error "Failed to find a pending status payment to capture for StoreOrderId : " + store_order_id + " - ** this will need to be fixing manually."
         end
 
+        marketplace_api = ::Marketplace::Api.instance
+        marketplace_api.notify(:order_dispatched, request.POST["StoreOrderId"], request.POST["StoreOrderItemIds"])
       end
 
       def order_unable_to_dispatch
@@ -114,7 +107,7 @@ module Spree
           order.cancel!
           logger.info "Successfully cancelled an order, StoreOrderId #{store_order_id}."
         else
-          logger.error "ORDER ERROR: Order not found, StoreOrderId #{store_order_id}."
+          logger.error "Order not found, StoreOrderId #{store_order_id}."
         end
       end
 
