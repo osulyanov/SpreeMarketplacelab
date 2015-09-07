@@ -2,12 +2,12 @@
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'spree_marketplacelab'
-  s.version     = '2.3.46'
+  s.version     = '2.3.47'
   s.summary     = 'Spree extension for Marketplace platform'
   s.description = 'Allows to fetch listings from Marketplace to Spree'
   s.required_ruby_version = '>= 1.9.3'
 
-  s.author    = 'Marketplace'
+  s.author      = 'Marketplace'
   # s.email     = 'you@example.com'
   # s.homepage  = 'http://www.spreecommerce.com'
 
