@@ -171,7 +171,7 @@ module Marketplace
     end
 
     def get_seller(seller_id)
-      get_api_response("/sellers/#{seller_id}", "", false)
+      get_api_response("/sellers/#{seller_id}", "", true)
     end
 
     def put_seller(seller_data)
