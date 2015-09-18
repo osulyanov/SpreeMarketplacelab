@@ -186,6 +186,10 @@ module Marketplace
       get_api_response("/listings/#{store_product_id}/availablestock", "", false)
     end
 
+    def post_sellers_listing(seller_id, listing_data)
+      post_api_response("/listings/seller/#{seller_id}", "", listing_data.to_json, true)
+    end
+
     def get_craft_product(store_product_id)
       get_api_response("/products/#{store_product_id}/craftlisting", "", true)
     end
@@ -502,7 +506,7 @@ module Marketplace
       end
     end
 
-    def post_api_response(endpoint_url, params = '', json = '')
+    def post_api_response(endpoint_url, params = '', json = '', return_response = false)
       if params != ''
         params += "&"
       end
@@ -519,7 +523,13 @@ module Marketplace
       response = ::HTTParty.post(url, verify: false, body: json, headers: headers)
       logger.info "Marketplace POST response code=#{response.code} content-length=#{response.headers['content-length']}, took #{s.elapsed_time}"
 
-      return response.code >= 200 && response.code < 300
+      success = response.code >= 200 && response.code < 300
+
+      if return_response
+        return success, response.parsed_response
+      else
+        success
+      end
     end
 
     def get_api_response(endpoint_url, params = '', hash_result = false)
