@@ -190,6 +190,10 @@ module Marketplace
       post_api_response("/listings/seller/#{seller_id}", "", listing_data.to_json, true)
     end
 
+    def get_order(order_id)
+      get_api_response("/orders/#{order_id}", "", true)
+    end
+
     def get_sellers_orders(seller_id, params = "")
       get_api_response("/sellers/#{seller_id}/orders", params, true)
     end
