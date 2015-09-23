@@ -303,6 +303,11 @@ module Marketplace
       post_api_response('/' + spree_order.number + '/adjustment', '', marketplace_order_adjustment)
     end
 
+    def cancel_ml_order(order, reason)
+      marketplace_order_adjustment = convert_ml_order_to_order_adjustment(order, 1, reason)
+      post_api_response("/orders/#{order['store_order_id']}/adjustment", '', marketplace_order_adjustment, true)
+    end
+
     def notify(event_name, *args)
       notify_listeners(event_name, *args)
     end
@@ -356,6 +361,23 @@ module Marketplace
                                               Quantity: item.quantity,
                                               Price: item.price,
                                               AdjustmentType: adjustment_type
+                                          })
+      }
+
+      return adjustment_dto.to_json
+    end
+
+    def convert_ml_order_to_order_adjustment(order, adjustment_type_id, reason)
+      adjustment_dto = {
+          StoreOrderId: order['store_order_id']
+      }
+
+      adjustment_dto[:Adjustments] = []
+      order['order_items'].each { |item|
+        adjustment_dto[:Adjustments].push({
+                                              StoreOrderItemId: item['store_order_item_id'],
+                                              AdjustmentType: adjustment_type_id,
+                                              AdditionalInformation: reason
                                           })
       }
 
