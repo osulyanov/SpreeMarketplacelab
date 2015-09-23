@@ -294,6 +294,7 @@ module Marketplace
 
     def create_order(spree_order)
       marketplace_order_json = convert_to_marketplace_order(spree_order)
+      @mark_orders_as_awaiting_dispatch = 'true'
       post_api_response('/orders/create', 'markAsDispatched=' + @mark_orders_as_awaiting_dispatch.to_s, marketplace_order_json)
     end
 
