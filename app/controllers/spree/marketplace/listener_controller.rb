@@ -114,7 +114,7 @@ module Spree
       def order_awaiting_dispatch
         store_order_id = request.POST["StoreOrderId"]
         logger.info "Order Awaiting Dispatch called for StoreOrderId " + store_order_id + " ."
-
+        logger.warn "request.POST=#{request.POST.inspect}"
       end
 
       private
