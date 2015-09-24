@@ -14,6 +14,7 @@ Spree::Core::Engine.routes.draw do
     post "/listener/order" => "listener#order"
     post "/listener/order_dispatched" => "listener#order_dispatched"
     post "/listener/order_unable_to_dispatch" => "listener#order_unable_to_dispatch"
+    post "/listener/order_awaiting_dispatch" => "listener#order_awaiting_dispatch"
     post "/listener/product" => "listener#product"
   end
 end
