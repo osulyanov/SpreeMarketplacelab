@@ -336,6 +336,7 @@ module Marketplace
       subscribe_to :order_allocated
       subscribe_to :order_dispatched
       subscribe_to :order_unable_to_dispatch
+      subscribe_to :order_awaiting_dispatch
     end
 
     private
@@ -504,6 +505,14 @@ module Marketplace
         payload = {
             HookSubscriptionType: 13,
             TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_unable_to_dispatch?token=' + @spree_auth_token
+        }.to_json
+        api_hooks_url = '/hooks'
+      end
+
+      if subscription_type == :order_awaiting_dispatch then
+        payload = {
+            HookSubscriptionType: 14,
+            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_awaiting_dispatch?token=' + @spree_auth_token
         }.to_json
         api_hooks_url = '/hooks'
       end

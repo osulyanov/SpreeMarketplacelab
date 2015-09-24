@@ -111,6 +111,12 @@ module Spree
         end
       end
 
+      def order_awaiting_dispatch
+        store_order_id = request.POST["StoreOrderId"]
+        logger.info "Order Awaiting Dispatch called for StoreOrderId " + store_order_id + " ."
+
+      end
+
       private
       def logger
         @logger ||= MarketplaceLogger.new
