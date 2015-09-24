@@ -115,6 +115,11 @@ module Spree
         store_order_id = request.POST["StoreOrderId"]
         logger.info "Order Awaiting Dispatch called for StoreOrderId " + store_order_id + " ."
         logger.warn "request.POST=#{request.POST.inspect}"
+
+        marketplace_api = ::Marketplace::Api.instance
+        marketplace_api.notify(:awaiting_dispatch, store_order_id)
+
+        @result = "ok"
       end
 
       private
