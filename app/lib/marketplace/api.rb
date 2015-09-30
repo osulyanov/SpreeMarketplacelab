@@ -167,7 +167,7 @@ module Marketplace
     end
 
     def get_seller_by_username(seller_username)
-      get_api_response("/sellers", "userName=#{seller_username}", true)
+      get_api_response("/sellers", "userName=#{CGI.escape(seller_username)}", true)
     end
 
     def get_seller(seller_id)
