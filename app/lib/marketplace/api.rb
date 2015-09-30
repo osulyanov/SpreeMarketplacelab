@@ -308,7 +308,7 @@ module Marketplace
           "StoreOrderId" => order['store_order_id'],
           "OrderAcknowledgementStatus" => 3,
           "FailureReason" => reason
-      }
+      }.to_json
       post_api_response("/sellers/#{order['order_items'][0]['seller_id']}/orders/#{order['store_order_id']}/acknowledge", '', data, true)
     end
 
