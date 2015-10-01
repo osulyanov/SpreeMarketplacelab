@@ -186,12 +186,12 @@ module Marketplace
       get_api_response("/listings/#{store_product_id}/availablestock", "", false)
     end
 
-    def sellers_listings(seller_id)
-      get_api_response("/sellers/#{seller_id}/listings", "", false)
+    def sellers_listings(seller_id, params="")
+      get_api_response("/sellers/#{seller_id}/listings", params, true)
     end
 
-    def get_sellers_listing(seller_id, params = "")
-      post_api_response("/listings/seller/#{seller_id}", params, true)
+    def post_sellers_listing(seller_id, listing_data)
+      post_api_response("/listings/seller/#{seller_id}", "", listing_data.to_json, true)
     end
 
     def get_order(order_id)
