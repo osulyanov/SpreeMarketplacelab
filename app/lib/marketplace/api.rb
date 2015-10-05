@@ -186,6 +186,11 @@ module Marketplace
       get_api_response("/listings/#{store_product_id}/availablestock", "", false)
     end
 
+    def close_listing(listing_id)
+      data = { "ListingStatus" => "Closed", "ListingId" => listing_id }.to_json
+      post_api_response("/listings/#{listing_id}", "", data, true)
+    end
+
     def sellers_listings(seller_id, params="")
       get_api_response("/sellers/#{seller_id}/listings", params, false)
     end
