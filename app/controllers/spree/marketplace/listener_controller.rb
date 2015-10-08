@@ -13,7 +13,7 @@ module Spree
         price = request.POST['Price']['Amount'].to_f unless price.nil?
         # price = 0.0 if price.nil?
 
-        if product_sku.nil?
+        if product_sku.blank?
           marketplace_id = request.POST["MarketplaceId"]
           product_sku = marketplace_api.generate_store_product_id marketplace_id
           result = marketplace_api.put_product_spi marketplace_id, product_sku
