@@ -203,6 +203,10 @@ module Marketplace
       get_api_response("/orders/#{order_id}", "", true)
     end
 
+    def get_sellers_account(seller_id, account_id)
+      get_api_response("/sellers/#{seller_id}/account/#{account_id}", "", true)
+    end
+
     def get_sellers_orders(seller_id, params = "")
       get_api_response("/sellers/#{seller_id}/orders", params, true)
     end
