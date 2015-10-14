@@ -207,6 +207,10 @@ module Marketplace
       get_api_response("/sellers/#{seller_id}/account/#{account_id}", "", true)
     end
 
+    def put_sellers_account(seller_id, data)
+      put_api_response("/sellers/#{seller_id}/account", "", data.to_json, true)
+    end
+
     def get_sellers_orders(seller_id, params = "")
       get_api_response("/sellers/#{seller_id}/orders", params, true)
     end
