@@ -191,6 +191,11 @@ module Marketplace
       post_api_response("/listings/#{listing_id}", "", data, true)
     end
 
+    def open_listing(listing_id)
+      data = { "ListingStatus" => "Open", "ListingId" => listing_id }.to_json
+      post_api_response("/listings/#{listing_id}", "", data, true)
+    end
+
     def sellers_listings(seller_id, params="")
       get_api_response("/sellers/#{seller_id}/listings", params, false)
     end
