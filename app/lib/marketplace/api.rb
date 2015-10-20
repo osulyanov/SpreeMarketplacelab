@@ -196,6 +196,11 @@ module Marketplace
       post_api_response("/listings/#{listing_id}", "", data, true)
     end
 
+    def reject_listing(listing_id)
+      data = { "ListingStatus" => "Rejected", "ListingId" => listing_id }.to_json
+      post_api_response("/listings/#{listing_id}", "", data, true)
+    end
+
     def sellers_listings(seller_id, params="")
       get_api_response("/sellers/#{seller_id}/listings", params, false)
     end
