@@ -201,6 +201,10 @@ module Marketplace
       post_api_response("/listings/#{listing_id}", "", data, true)
     end
 
+    def update_listing(listing_id, listing_data)
+      post_api_response("/listings/#{listing_id}", "", listing_data, true)
+    end
+
     def sellers_listings(seller_id, params="")
       get_api_response("/sellers/#{seller_id}/listings", params, false)
     end
