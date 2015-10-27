@@ -430,7 +430,7 @@ module Marketplace
                                         PaymentStatus: PAYMENT_STATUS_PAID,
                                         ShippingStatus: SHIPPING_STATUS_PENDING,
                                         Quantity: item.quantity,
-                                        Price: item.price,
+                                        Price: item.amount,
                                         StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
                                         StoreProductId: item.variant.sku,
                                         SellerId: listing['seller_id'] || listing[:seller_id],
@@ -445,7 +445,7 @@ module Marketplace
                                         DeliveryCounty: spree_order.shipping_address.state_name,
                                         DeliveryTown: spree_order.shipping_address.city,
                                         DeliveryPostcode: spree_order.shipping_address.zipcode,
-                                        DeliveryCost: 0,
+                                        DeliveryCost: get_delivery_cost(spree_order, item),
                                         ShippingType: get_shipping_type(spree_order, item)
                                     })
       }
@@ -453,9 +453,42 @@ module Marketplace
       return order_dto.to_json
     end
 
-    def get_shipping_type(spree_order, order_item)
+    def get_delivery_cost(spree_order, order_item)
+      selected_shipment = nil
+      spree_order.shipments.each do |shipment|
+        shipment.inventory_units.each do |inventory_unit|
+          if inventory_unit.line_item == order_item
+            selected_shipment = shipment
+          end
+        end
+      end
+
+      return 0 if selected_shipment.nil?
+
       shipping_method = nil
-      spree_order.shipments[0].shipping_rates.each do |rate|
+      selected_shipment.shipping_rates.each do |rate|
+        if rate.selected
+          return rate.cost
+        end
+      end
+
+      return 0
+    end
+
+    def get_shipping_type(spree_order, order_item)
+      selected_shipment = nil
+      spree_order.shipments.each do |shipment|
+        shipment.inventory_units.each do |inventory_unit|
+          if inventory_unit.line_item == order_item
+            selected_shipment = shipment
+          end
+        end
+      end
+
+      return nil if selected_shipment.nil?
+
+      shipping_method = nil
+      selected_shipment.shipping_rates.each do |rate|
         if rate.selected
           shipping_method = rate.shipping_method
         end
