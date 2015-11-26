@@ -16,9 +16,9 @@ module Marketplace
 
       # marketplacelab headers
       @headers = {
-          "X-MarketplaceLab-User-Agent-Application-Name" => @appName,
-          "X-MarketplaceLab-User-Agent-Language" => "Ruby #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}",
-          "X-MarketplaceLab-User-Agent-Application-Version" => "master"
+        "X-MarketplaceLab-User-Agent-Application-Name" => @appName,
+        "X-MarketplaceLab-User-Agent-Language" => "Ruby #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}",
+        "X-MarketplaceLab-User-Agent-Application-Version" => "master"
       }
 
     end
@@ -66,15 +66,15 @@ module Marketplace
 
         # create new product (see spree_api products_controller)
         product_params = {
-            shipping_category_id: 1,
-            name: marketplace_product["title"],
-            price: price,
-            sku: marketplace_product["store_product_id"],
-            description: marketplace_product["long_description"],
-            weight: marketplace_product["weight_in_grams"],
-            height: marketplace_product["height_in_mm"],
-            width: marketplace_product["width_in_mm"],
-            depth: marketplace_product["depth_in_mm"],
+          shipping_category_id: 1,
+          name: marketplace_product["title"],
+          price: price,
+          sku: marketplace_product["store_product_id"],
+          description: marketplace_product["long_description"],
+          weight: marketplace_product["weight_in_grams"],
+          height: marketplace_product["height_in_mm"],
+          width: marketplace_product["width_in_mm"],
+          depth: marketplace_product["depth_in_mm"],
         }
 
         options = { variants_attrs: [], options_attrs: [] }
@@ -243,8 +243,8 @@ module Marketplace
 
     def dispatch_order(store_order_id)
       dispatch_model = {
-          StoreOrderId: store_order_id,
-          DispatchDate: Time.now.strftime("%Y-%m-%d %H:%M")
+        StoreOrderId: store_order_id,
+        DispatchDate: Time.now.strftime("%Y-%m-%d %H:%M")
       }.to_json
 
       post_api_response("/orders/#{store_order_id}/dispatch", "", dispatch_model)
@@ -260,50 +260,50 @@ module Marketplace
 
     def create_listing(spree_product, spree_user, sub_condition)
       listing_model = {
-          SKU: spree_product.sku,
-          StoreProductId: spree_product.sku,
-          Upc: spree_product.sku,
-          Title: spree_product.name,
-          ItemNote: spree_product.description,
-          Condition: "Used",
-          SubCondition: sub_condition,
-          DispatchedFrom: "GB",
-          DispatchedTo: "UK",
-          QuantityAvailable: 1,
-          ListingPrices: [
-              {
-                  Amount: spree_product.price,
-                  CurrencyType: "GBP",
-                  ListingPriceId: 3 # AskingPrice
-              },
-              {
-                  Amount: spree_product.retail_price,
-                  CurrencyType: "GBP",
-                  ListingPriceId: 4 # RetailPrice
-              },
-              {
-                  Amount: spree_product.best_offer_price,
-                  CurrencyType: "GBP",
-                  ListingPriceId: 5 # BestOfferPrice
-              }
-          ],
-          DeliveryPrices: nil,
-          ProductIdType: "UPC",
-          CustomAttributes: {
-              Width: spree_product.width.to_s,
-              Height: spree_product.height.to_s,
-              Depth: spree_product.depth.to_s,
-              Weight: spree_product.weight.to_s,
+        SKU: spree_product.sku,
+        StoreProductId: spree_product.sku,
+        Upc: spree_product.sku,
+        Title: spree_product.name,
+        ItemNote: spree_product.description,
+        Condition: "Used",
+        SubCondition: sub_condition,
+        DispatchedFrom: "GB",
+        DispatchedTo: "UK",
+        QuantityAvailable: 1,
+        ListingPrices: [
+          {
+            Amount: spree_product.price,
+            CurrencyType: "GBP",
+            ListingPriceId: 3 # AskingPrice
           },
-          Category: spree_product.major_category,
-          Images: [
-              {
-                  ImageUrl: spree_product.images[0].attachment.url,
-                  ImageType: "Large"
-              }
-          ],
-          StoreCustomerId: spree_user.email,
-          Comment: "From Furniture"
+          {
+            Amount: spree_product.retail_price,
+            CurrencyType: "GBP",
+            ListingPriceId: 4 # RetailPrice
+          },
+          {
+            Amount: spree_product.best_offer_price,
+            CurrencyType: "GBP",
+            ListingPriceId: 5 # BestOfferPrice
+          }
+        ],
+        DeliveryPrices: nil,
+        ProductIdType: "UPC",
+        CustomAttributes: {
+          Width: spree_product.width.to_s,
+          Height: spree_product.height.to_s,
+          Depth: spree_product.depth.to_s,
+          Weight: spree_product.weight.to_s,
+        },
+        Category: spree_product.major_category,
+        Images: [
+          {
+            ImageUrl: spree_product.images[0].attachment.url,
+            ImageType: "Large"
+          }
+        ],
+        StoreCustomerId: spree_user.email,
+        Comment: "From Furniture"
       }.to_json
 
       post_api_response("/listings/selleremail", "sellerEmail=#{spree_user.email}", listing_model)
@@ -311,13 +311,13 @@ module Marketplace
 
     def create_product(spree_product)
       marketplace_product_json = {
-          UPC: spree_product.sku,
-          StoreProductId: spree_product.sku,
-          Title: spree_product.name,
-          Price: {
-              Currency: "GBP",
-              Amount: spree_product.price
-          }
+        UPC: spree_product.sku,
+        StoreProductId: spree_product.sku,
+        Title: spree_product.name,
+        Price: {
+          Currency: "GBP",
+          Amount: spree_product.price
+        }
       }.to_json
 
       post_api_response('/products', '', marketplace_product_json)
@@ -344,9 +344,9 @@ module Marketplace
 
     def cancel_ml_order(order, reason)
       data = {
-          "StoreOrderId" => order['store_order_id'],
-          "OrderAcknowledgementStatus" => 3,
-          "FailureReason" => reason
+        "StoreOrderId" => order['store_order_id'],
+        "OrderAcknowledgementStatus" => 3,
+        "FailureReason" => reason
       }.to_json
       post_api_response("/sellers/#{order['order_items'][0]['seller_id']}/orders/#{order['store_order_id']}/acknowledge", '', data, true)
     end
@@ -394,17 +394,17 @@ module Marketplace
 
     def convert_to_order_adjustment(spree_order, adjustment_type)
       adjustment_dto = {
-          CustomerEmail: spree_order.email,
-          StoreOrderId: spree_order.number,
+        CustomerEmail: spree_order.email,
+        StoreOrderId: spree_order.number,
       }
 
       adjustment_dto[:Adjustments] = []
       spree_order.line_items.each { |item|
         adjustment_dto[:Adjustments].push({
-                                              StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
-                                              Quantity: item.quantity,
-                                              Price: item.price,
-                                              AdjustmentType: adjustment_type
+                                            StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
+                                            Quantity: item.quantity,
+                                            Price: item.price,
+                                            AdjustmentType: adjustment_type
                                           })
       }
 
@@ -413,27 +413,30 @@ module Marketplace
 
     def convert_to_marketplace_order(spree_order)
       order_dto = {
-          StoreOrderId: spree_order.number,
-          SellerOrderId: spree_order.number,
-          CustomerEmail: spree_order.email,
-          CustomerPhoneNumber: spree_order.billing_address.phone,
-          CustomerTitle: "",
-          CustomerFirstName: spree_order.shipping_address.firstname,
-          CustomerLastName: spree_order.shipping_address.lastname,
-          StoreOrderDate: spree_order.created_at,
+        StoreOrderId: spree_order.number,
+        SellerOrderId: spree_order.number,
+        CustomerEmail: spree_order.email,
+        CustomerPhoneNumber: spree_order.billing_address.phone,
+        CustomerTitle: "",
+        CustomerFirstName: spree_order.shipping_address.firstname,
+        CustomerLastName: spree_order.shipping_address.lastname,
+        StoreOrderDate: spree_order.created_at,
       }
 
       order_dto[:OrderItems] = []
 
-      spree_order.line_items.each { |item|
-        if item.respond_to?(:listing)
-          listing = item.listing
-        else
-          listing_id = Spree::Product.joins(:master).find_by("spree_variants.id=?", item.variant_id).property("ListingId")
-          listing = get_listing(listing_id)
-        end
+      spree_order.shipments.each do |shipment|
+        items_in_shipment = shipment.line_items.size
 
-        order_dto[:OrderItems].push({
+        shipment.line_items.each do |item|
+          if item.respond_to?(:listing)
+            listing = item.listing
+          else
+            listing_id = Spree::Product.joins(:master).find_by("spree_variants.id=?", item.variant_id).property("ListingId")
+            listing = get_listing(listing_id)
+          end
+
+          order_dto[:OrderItems].push({
                                         ListingId: listing['listing_id'] || listing[:listing_id],
                                         PaymentStatus: PAYMENT_STATUS_PAID,
                                         ShippingStatus: SHIPPING_STATUS_PENDING,
@@ -453,10 +456,11 @@ module Marketplace
                                         DeliveryCounty: spree_order.shipping_address.state_name,
                                         DeliveryTown: spree_order.shipping_address.city,
                                         DeliveryPostcode: spree_order.shipping_address.zipcode,
-                                        DeliveryCost: get_delivery_cost(spree_order, item),
+                                        DeliveryCost: get_delivery_cost(spree_order, item) / items_in_shipment.to_f,
                                         ShippingType: get_shipping_type(spree_order, item)
-                                    })
-      }
+                                      })
+        end
+      end
 
       return order_dto.to_json
     end
@@ -514,64 +518,64 @@ module Marketplace
     def subscribe_to(subscription_type)
       if subscription_type == :listing_created then
         payload = {
-            HookSubscriptionType: 6,
-            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
+          HookSubscriptionType: 6,
+          TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
         }.to_json
         api_hooks_url = '/hooks'
       end
 
       if subscription_type == :listing_updated then
         payload = {
-            HookSubscriptionType: 7,
-            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
+          HookSubscriptionType: 7,
+          TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/listing?token=' + @spree_auth_token
         }.to_json
         api_hooks_url = '/hooks'
       end
 
       if subscription_type == :product_created then
         payload = {
-            HookSubscriptionType: 10,
-            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
+          HookSubscriptionType: 10,
+          TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
         }.to_json
         api_hooks_url = '/hooks'
       end
 
       if subscription_type == :product_updated then
         payload = {
-            HookSubscriptionType: 11,
-            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
+          HookSubscriptionType: 11,
+          TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
         }.to_json
         api_hooks_url = '/hooks'
       end
 
       if subscription_type == :order_allocated then
         payload = {
-            HookSubscriptionType: 2,
-            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order?token=' + @spree_auth_token
+          HookSubscriptionType: 2,
+          TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order?token=' + @spree_auth_token
         }.to_json
         api_hooks_url = '/hooks'
       end
 
       if subscription_type == :order_dispatched then
         payload = {
-            HookSubscriptionType: 5,
-            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_dispatched?token=' + @spree_auth_token
+          HookSubscriptionType: 5,
+          TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_dispatched?token=' + @spree_auth_token
         }.to_json
         api_hooks_url = '/hooks'
       end
 
       if subscription_type == :order_unable_to_dispatch then
         payload = {
-            HookSubscriptionType: 13,
-            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_unable_to_dispatch?token=' + @spree_auth_token
+          HookSubscriptionType: 13,
+          TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_unable_to_dispatch?token=' + @spree_auth_token
         }.to_json
         api_hooks_url = '/hooks'
       end
 
       if subscription_type == :order_awaiting_dispatch then
         payload = {
-            HookSubscriptionType: 14,
-            TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_awaiting_dispatch?token=' + @spree_auth_token
+          HookSubscriptionType: 14,
+          TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/order_awaiting_dispatch?token=' + @spree_auth_token
         }.to_json
         api_hooks_url = '/hooks'
       end
