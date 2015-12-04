@@ -420,7 +420,7 @@ module Marketplace
         CustomerTitle: "",
         CustomerFirstName: spree_order.shipping_address.firstname,
         CustomerLastName: spree_order.shipping_address.lastname,
-        StoreOrderDate: spree_order.created_at,
+        StoreOrderDate: spree_order.completed_at,
       }
 
       order_dto[:OrderItems] = []
