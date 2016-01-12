@@ -418,8 +418,8 @@ module Marketplace
         CustomerEmail: spree_order.email,
         CustomerPhoneNumber: spree_order.billing_address.phone,
         CustomerTitle: "",
-        CustomerFirstName: spree_order.shipping_address.firstname,
-        CustomerLastName: spree_order.shipping_address.lastname,
+        CustomerFirstName: spree_order.billing_address.firstname,
+        CustomerLastName: spree_order.billing_address.lastname,
         StoreOrderDate: spree_order.completed_at,
       }
 
