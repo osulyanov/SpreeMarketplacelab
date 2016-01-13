@@ -258,6 +258,10 @@ module Marketplace
       get_api_response("/orders/#{store_order_id}/orderitems/#{store_product_id}", "", true)
     end
 
+    def get_product_attributes(product_type_id)
+      get_api_response("/producttypes/#{product_type_id}", "", true)
+    end
+
     def create_listing(spree_product, spree_user, sub_condition)
       listing_model = {
         SKU: spree_product.sku,
