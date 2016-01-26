@@ -355,6 +355,25 @@ module Marketplace
       post_api_response("/sellers/#{order['order_items'][0]['seller_id']}/orders/#{order['store_order_id']}/acknowledge", '', data, true)
     end
 
+    def cancel_ml_order_v2(order, reason)
+      data = {
+        "StoreOrderId" => order['store_order_id'],
+        "Adjustments" => [
+          {
+              "StoreOrderItemId" => order['order_items'][0]['store_order_item_id'],
+              "Quantity" => order['order_items'][0]['quantity'],
+              "AdjustmentType" => 20, # seller cancellation
+              "AdjustmentReasonCode" => "sco", # "Other" seller cancellation reason
+              "AdjustmentReasonFreeText" => reason,
+              "Currency" => order['order_items'][0]['currency_type'],
+              "Amount" => order['order_items'][0]['price']
+          }
+        ]
+      }.to_json
+
+      post_api_response("/orders/#{order['store_order_id']}/adjustments", '', data, true)
+    end
+
     def notify(event_name, *args)
       notify_listeners(event_name, *args)
     end
