@@ -360,13 +360,13 @@ module Marketplace
         "StoreOrderId" => order['store_order_id'],
         "Adjustments" => [
           {
-              "StoreOrderItemId" => order['order_items'][0]['store_order_item_id'],
-              "Quantity" => order['order_items'][0]['quantity'],
-              "AdjustmentType" => 20, # seller cancellation
-              "AdjustmentReasonCode" => "sco", # "Other" seller cancellation reason
-              "AdjustmentReasonFreeText" => reason,
-              "Currency" => order['order_items'][0]['currency_type'],
-              "Amount" => order['order_items'][0]['price']
+            "StoreOrderItemId" => order['order_items'][0]['store_order_item_id'],
+            "Quantity" => order['order_items'][0]['quantity'],
+            "AdjustmentType" => 20, # seller cancellation
+            "AdjustmentReasonCode" => "sco", # "Other" seller cancellation reason
+            "AdjustmentReasonFreeText" => reason,
+            "Currency" => order['order_items'][0]['currency_type'],
+            "Amount" => order['order_items'][0]['price']
           }
         ]
       }.to_json
@@ -443,7 +443,7 @@ module Marketplace
         CustomerTitle: "",
         CustomerFirstName: spree_order.billing_address.firstname,
         CustomerLastName: spree_order.billing_address.lastname,
-        StoreOrderDate: spree_order.completed_at,
+        StoreOrderDate: (spree_order.completed_at || Time.zone.now),
       }
 
       order_dto[:OrderItems] = []
