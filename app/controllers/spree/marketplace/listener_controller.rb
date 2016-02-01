@@ -1,6 +1,7 @@
 module Spree
   module Marketplace
     class ListenerController < Spree::Api::BaseController
+      skip_before_filter :authenticate_user
 
       def product
         product_sku = request.POST["StoreProductId"]
