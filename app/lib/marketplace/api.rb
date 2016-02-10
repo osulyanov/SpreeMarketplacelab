@@ -464,7 +464,7 @@ module Marketplace
                                         PaymentStatus: PAYMENT_STATUS_PAID,
                                         ShippingStatus: SHIPPING_STATUS_PENDING,
                                         Quantity: item.quantity,
-                                        Price: item.price,
+                                        Price: item.try(:price_for_ml) || item.price,
                                         StoreOrderItemId: spree_order.number + "-" + item.id.to_s,
                                         StoreProductId: item.variant.sku,
                                         SellerId: listing['seller_id'] || listing[:seller_id],
