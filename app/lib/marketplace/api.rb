@@ -98,8 +98,9 @@ module Marketplace
 
       create_or_update_product_images(spree_product, marketplace_product)
 
-      spree_product.save!
       logger.info "Product saved, SKU: #{store_product_id}, took #{s.elapsed_time}"
+
+      is_ingredients_present = spree_product.has_attribute?(:ingredients)
 
       if marketplace_product['attributes'] != nil
         properties = {}
@@ -108,9 +109,15 @@ module Marketplace
           properties[attr['name']] << attr['value']
         end
         properties.each do |name, values|
-          spree_product.set_property(name, values.join(', ').truncate(250, omission: '...'))
+          if is_ingredients_present && name == 'Ingredients'
+            spree_product.ingredients = values.join(', ')
+          else
+            spree_product.set_property(name, values.join(', ').truncate(250, omission: '...'))
+          end
         end
       end
+
+      spree_product.save!
 
       logger.info "Properties set, returning, SKU: #{store_product_id}, took #{s.elapsed_time}"
 
