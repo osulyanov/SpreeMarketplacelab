@@ -462,7 +462,7 @@ module Marketplace
           if item.respond_to?(:listing)
             listing = item.listing
           else
-            listing_id = Spree::Product.joins(:master).find_by("spree_variants.id=?", item.variant_id).property("ListingId")
+            listing_id = Spree::Variant.joins(:product).find_by("spree_variants.id=?", item.variant_id).product.property("ListingId")
             listing = get_listing(listing_id)
           end
 
