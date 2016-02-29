@@ -342,8 +342,8 @@ module Marketplace
       get_api_response("/products/#{product_ids}/listings?condition=new&view=bestprices")
     end
 
-    def create_order(spree_order)
-      marketplace_order_json = convert_to_marketplace_order(spree_order)
+    def create_order(spree_order, charge_id=nil)
+      marketplace_order_json = convert_to_marketplace_order(spree_order, charge_id)
       @mark_orders_as_awaiting_dispatch = 'true'
       post_api_response('/orders/create', 'markAsDispatched=' + @mark_orders_as_awaiting_dispatch.to_s, marketplace_order_json)
     end
@@ -441,7 +441,7 @@ module Marketplace
       return adjustment_dto.to_json
     end
 
-    def convert_to_marketplace_order(spree_order)
+    def convert_to_marketplace_order(spree_order, charge_id)
       order_dto = {
         StoreOrderId: spree_order.number,
         SellerOrderId: spree_order.number,
@@ -454,6 +454,7 @@ module Marketplace
       }
 
       order_dto[:OrderItems] = []
+      order_dto[:OrderItemGroupModels] = []
 
       spree_order.shipments.each do |shipment|
         items_in_shipment = shipment.line_items.size
@@ -489,6 +490,23 @@ module Marketplace
                                         DeliveryCost: get_delivery_cost(spree_order, item) / items_in_shipment.to_f,
                                         ShippingType: get_shipping_type(spree_order, item)
                                       })
+          if charge_id
+            order_dto[:OrderItemGroupModels].push({
+              StoreOrderItemIds: [spree_order.number + "-" + item.id.to_s],
+              OptionTypeModels: [
+                {
+                  StoreOptionTypeId: "StripeChargeId",
+                  OptionDetailModels: [
+                    {
+                      Key: "StripeChargeId",
+                      Value: charge_id
+                    }
+                  ]
+                }
+              ]
+            })
+          end
+
         end
       end
 
