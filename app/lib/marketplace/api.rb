@@ -248,13 +248,15 @@ module Marketplace
       get_api_response("/products/#{store_product_id}/craftlisting", "", true)
     end
 
-    def dispatch_order(store_order_id)
+    def dispatch_order(store_order_id, store_carrier_id, tracking_number)
       dispatch_model = {
         StoreOrderId: store_order_id,
         DispatchDate: Time.now.strftime("%Y-%m-%d %H:%M")
-      }.to_json
+      }
+      dispatch_model[:StoreCarrierId] = store_carrier_id if store_carrier_id.present?
+      dispatch_model[:TrackingNumber] = tracking_number if tracking_number.present?
 
-      post_api_response("/orders/#{store_order_id}/dispatch", "", dispatch_model)
+      post_api_response("/orders/#{store_order_id}/dispatch", "", dispatch_model.to_json)
     end
 
     def get_dispatch_status(store_product_id)
@@ -401,6 +403,10 @@ module Marketplace
       listing[0] if listing && listing.any?
     end
 
+    def get_carriers
+      get_api_response("/carriers")
+    end
+
     def subscribe_to_webhooks
       subscribe_to :listing_created
       subscribe_to :listing_updated
@@ -492,19 +498,19 @@ module Marketplace
                                       })
           if charge_id
             order_dto[:OrderItemGroupModels].push({
-              StoreOrderItemIds: [spree_order.number + "-" + item.id.to_s],
-              OptionTypeModels: [
-                {
-                  StoreOptionTypeId: "StripeChargeId",
-                  OptionDetailModels: [
-                    {
-                      Key: "StripeChargeId",
-                      Value: charge_id
-                    }
-                  ]
-                }
-              ]
-            })
+                                                    StoreOrderItemIds: [spree_order.number + "-" + item.id.to_s],
+                                                    OptionTypeModels: [
+                                                      {
+                                                        StoreOptionTypeId: "StripeChargeId",
+                                                        OptionDetailModels: [
+                                                          {
+                                                            Key: "StripeChargeId",
+                                                            Value: charge_id
+                                                          }
+                                                        ]
+                                                      }
+                                                    ]
+                                                  })
           end
 
         end
