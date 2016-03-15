@@ -7,7 +7,7 @@ Spree::Admin::OrdersController.class_eval do
     order = ::Marketplace::Api.instance.get_order(params[:id])
     success, response = api.cancel_ml_order_v2(order, "Cancelled within Spree Admin")
     if success 
-      seller = ::Marketplace::Api.instance.get_seller(order["order_items"]["seller_id"])
+      seller = ::Marketplace::Api.instance.get_seller(order["order_items"][0]["seller_id"])
       Spree::OrderMailer.canceled(order, seller, "Cancelled within Spree Admin").deliver!
       flash[:error] = "<strong>Order cancelled!</strong>"
     else
