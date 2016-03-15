@@ -9,7 +9,6 @@ Spree::Admin::OrdersController.class_eval do
     if success 
       seller = ::Marketplace::Api.instance.get_seller(order["order_items"][0]["seller_id"])
       Spree::OrderMailer.canceled(order, seller, "Cancelled within Spree Admin").deliver!
-      flash[:error] = "<strong>Order cancelled!</strong>"
     else
       Rails.logger.warn "Order Cancellation Failed - Marketplace error; response: #{response.inspect}"
       flash[:success] = nil
