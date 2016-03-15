@@ -105,7 +105,7 @@ module Spree
         order = Spree::Order.find_by!(number: store_order_id)
 
         if order
-          order.cancel!
+          order.cancel! unless order.state == "canceled"
           logger.info "Successfully cancelled an order, StoreOrderId #{store_order_id}."
         else
           logger.error "Order not found, StoreOrderId #{store_order_id}."
