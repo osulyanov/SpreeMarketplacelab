@@ -4,9 +4,10 @@ Spree::Admin::OrdersController.class_eval do
   def notify_order_cancelled
     # @order
     api = Marketplace::Api.instance
-    success, response = api.cancel_ml_order_v2(@order, "Cancelled within Spree Admin")
+    order = ::Marketplace::Api.instance.get_order(params[:id])
+    success, response = api.cancel_ml_order_v2(order, "Cancelled within Spree Admin")
     if success 
-      Spree::OrderMailer.canceled(@order, @seller, "Cancelled within Spree Admin").deliver!
+      Spree::OrderMailer.canceled(order, @seller, "Cancelled within Spree Admin").deliver!
       flash[:error] = "<strong>Order cancelled!</strong>"
     else
       Rails.logger.warn "Order Cancellation Failed - Marketplace error; response: #{response.inspect}"
