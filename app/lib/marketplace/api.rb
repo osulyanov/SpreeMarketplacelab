@@ -251,10 +251,12 @@ module Marketplace
     def dispatch_order(store_order_id, store_carrier_id, tracking_number)
       dispatch_model = {
         StoreOrderId: store_order_id,
-        DispatchDate: Time.now.strftime("%Y-%m-%d %H:%M")
+        DispatchDate: Time.now.strftime("%Y-%m-%d %H:%M"),
       }
       dispatch_model[:StoreCarrierId] = store_carrier_id if store_carrier_id.present?
       dispatch_model[:TrackingNumber] = tracking_number if tracking_number.present?
+      spree_order = Spree::Order.find_by(number: store_order_id)
+      dispatch_model[:ShippingType] = get_shipping_type(spree_order, spree_order.line_items.first) if spree_order
 
       post_api_response("/orders/#{store_order_id}/dispatch", "", dispatch_model.to_json)
     end
