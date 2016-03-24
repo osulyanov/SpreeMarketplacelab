@@ -173,6 +173,10 @@ module Marketplace
       get_api_response("/products/#{store_product_ids}", "", false)
     end
 
+    def get_product_by_marketplace_id(marketplace_id)
+      get_api_response("/products/", "marketplaceId=#{marketplace_id}", true)
+    end
+
     def get_seller_by_username(seller_username)
       get_api_response("/sellers", "userName=#{CGI.escape(seller_username)}", true)
     end
