@@ -454,7 +454,6 @@ module Marketplace
     end
 
     def convert_to_marketplace_order(spree_order, charge_id)
-      Rails.logger.info "START convert_to_marketplace_order"
       order_dto = {
         StoreOrderId: spree_order.number,
         SellerOrderId: spree_order.number,
