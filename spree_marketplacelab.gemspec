@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'spree_marketplacelab'
-  s.version     = '2.3.97'
+  s.version     = '2.3.98'
   s.summary     = 'Spree extension for Marketplace platform'
   s.description = 'Allows to fetch listings from Marketplace to Spree'
   s.required_ruby_version = '>= 1.9.3'

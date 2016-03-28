@@ -454,6 +454,7 @@ module Marketplace
     end
 
     def convert_to_marketplace_order(spree_order, charge_id)
+      Rails.logger.info "START convert_to_marketplace_order"
       order_dto = {
         StoreOrderId: spree_order.number,
         SellerOrderId: spree_order.number,
@@ -475,7 +476,8 @@ module Marketplace
           if item.respond_to?(:listing)
             listing = item.listing
           else
-            listing_id = Spree::Variant.joins(:product).find_by("spree_variants.id=?", item.variant_id).product.property("ListingId")
+            variant = Spree::Variant.joins(:product).find_by("spree_variants.id=?", item.variant_id)
+            listing_id = variant.listing_id || variant.product.property("ListingId")
             listing = get_listing(listing_id)
           end
 
