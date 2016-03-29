@@ -32,6 +32,22 @@ module Spree
         @result = "ok"
       end
 
+      def listing_created
+        # listing_id = request.POST["ListingId"]
+        product_sku = request.POST["StoreProductId"]
+
+        logger.info "Listing hook for SKU: #{product_sku}"
+
+        stopwatch = ::Stopwatch.new
+
+        marketplace_api = ::Marketplace::Api.instance
+        marketplace_api.notify(:listing_created, product_sku)
+
+        logger.info "Listing hook for SKU: #{product_sku} processed, took #{stopwatch.elapsed_time}"
+
+        @result = "ok"
+      end
+
       def listing
         # listing_id = request.POST["ListingId"]
         product_sku = request.POST["StoreProductId"]
