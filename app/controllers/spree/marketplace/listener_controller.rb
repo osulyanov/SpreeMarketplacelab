@@ -33,7 +33,7 @@ module Spree
       end
 
       def listing_created
-        # listing_id = request.POST["ListingId"]
+        listing_id = request.POST["ListingId"]
         product_sku = request.POST["StoreProductId"]
 
         logger.info "Listing hook for SKU: #{product_sku}"
@@ -41,7 +41,7 @@ module Spree
         stopwatch = ::Stopwatch.new
 
         marketplace_api = ::Marketplace::Api.instance
-        marketplace_api.notify(:listing_created, product_sku)
+        marketplace_api.notify(:listing_created, listing_id, product_sku)
 
         logger.info "Listing hook for SKU: #{product_sku} processed, took #{stopwatch.elapsed_time}"
 
