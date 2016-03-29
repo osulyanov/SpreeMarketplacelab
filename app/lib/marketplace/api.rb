@@ -248,6 +248,14 @@ module Marketplace
       get_api_response("/sellers/#{seller_id}/orders", params, true)
     end
 
+    def get_sellers_balance(seller_id, params = "")
+      get_api_response("/sellers/#{seller_id}/balance", params, true)
+    end
+
+    def get_sellers_statements(seller_id, params = "")
+      get_api_response("/sellers/#{seller_id}/statements", params, true)
+    end
+
     def get_craft_product(store_product_id)
       get_api_response("/products/#{store_product_id}/craftlisting", "", true)
     end
