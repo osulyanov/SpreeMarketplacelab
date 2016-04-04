@@ -1,4 +1,6 @@
 require 'httparty'
+require 'net/http'
+require 'uri'
 
 module Marketplace
   class Api
@@ -423,6 +425,44 @@ module Marketplace
 
     def get_carriers
       get_api_response("/carriers")
+    end
+
+    def put_bulk_upload(seller_id, csv_filename)
+      endpoint_url = "/sellers/#{seller_id}/upload"
+      params = "sellerInterfaceType=Product&apikey=#{@api_key}&accountkey=#{@account_key}"
+
+      url = "#{@api_base_url}#{@api_version}#{endpoint_url}?#{params}"
+      logger.info "Marketplace PUT #{url} #{csv_filename}"
+
+      uri = URI.parse(url)
+
+      boundary = "AaB03xP9HNb7"
+
+      post_body = []
+      post_body << "--#{boundary}\r\n"
+      post_body << "Content-Disposition: form-data; name='testFile'; filename='#{File.basename(csv_filename)}'\r\n"
+      post_body << "Content-Type: \r\n"
+      post_body << "\r\n"
+      post_body << File.read(csv_filename)
+      post_body << "\r\n--#{boundary}\r\n"
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = (uri.scheme == 'https')
+      request = Net::HTTP::Post.new(uri.request_uri)
+      request.body = post_body.join
+      request["Content-Type"] = "multipart/form-data, boundary=--#{boundary}"
+      request["X-MarketplaceLab-User-Agent-Application-Name"] = @appName
+      request["X-MarketplaceLab-User-Agent-Language"] = "Ruby #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
+      request["X-MarketplaceLab-User-Agent-Application-Version"] = "master"
+
+      s = ::Stopwatch.new
+      response = http.request(request)
+
+      logger.info "Marketplace PUT response code=#{response.code} took #{s.elapsed_time}"
+
+      success = response.code >= "200" && response.code < "300"
+
+      success
     end
 
     def subscribe_to_webhooks
