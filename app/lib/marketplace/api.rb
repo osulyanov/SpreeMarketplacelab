@@ -648,7 +648,7 @@ module Marketplace
       if subscription_type == :product_created then
         payload = {
           HookSubscriptionType: 10,
-          TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product?token=' + @spree_auth_token
+          TargetUrl: 'https://' + Spree::Config.site_url + '/marketplace/listener/product_created?token=' + @spree_auth_token
         }.to_json
         api_hooks_url = '/hooks'
       end
