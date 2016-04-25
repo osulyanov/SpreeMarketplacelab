@@ -481,6 +481,7 @@ module Marketplace
     # some marketplacelab constants
     COUNTRY_ID_UK = 235 # country United Kingdom
     LISTING_CONDITION_ID_NEW = 1 # listing condition New
+    LISTING_CONDITION_ID_USED = 2 # listing condition Used
     QUANTITY_UNIT_TYPE_ID = 1 # quantity unit type Item
     CURRENCY_TYPE_ID_GBP = 826 # currency type GBP
     PAYMENT_STATUS_PAID = 30 # payment status Paid
@@ -505,7 +506,7 @@ module Marketplace
       return adjustment_dto.to_json
     end
 
-    def convert_to_marketplace_order(spree_order, charge_id)
+    def convert_to_marketplace_order(spree_order, charge_id=nil)
       order_dto = {
         StoreOrderId: spree_order.number,
         SellerOrderId: spree_order.number,
@@ -542,7 +543,7 @@ module Marketplace
                                         StoreProductId: item.variant.sku,
                                         SellerId: listing['seller_id'] || listing[:seller_id],
                                         ListingDispatchFromCountryId: COUNTRY_ID_UK,
-                                        ListingConditionId: LISTING_CONDITION_ID_NEW,
+                                        ListingConditionId: listing_condition(item.variant.product.property('Condition')),
                                         QuantityUnitTypeId: QUANTITY_UNIT_TYPE_ID,
                                         CurrencyType: CURRENCY_TYPE_ID_GBP,
                                         DeliveryName: spree_order.shipping_address.firstname + " " + spree_order.shipping_address.lastname,
@@ -555,27 +556,42 @@ module Marketplace
                                         DeliveryCost: get_delivery_cost(spree_order, item) / items_in_shipment.to_f,
                                         ShippingType: get_shipping_type(spree_order, item)
                                       })
-          if charge_id
-            order_dto[:OrderItemGroupModels].push({
-                                                    StoreOrderItemIds: [spree_order.number + "-" + item.id.to_s],
-                                                    OptionTypeModels: [
-                                                      {
-                                                        StoreOptionTypeId: "StripeChargeId",
-                                                        OptionDetailModels: [
-                                                          {
-                                                            Key: "StripeChargeId",
-                                                            Value: charge_id
-                                                          }
-                                                        ]
-                                                      }
-                                                    ]
-                                                  })
-          end
+
+          charge_id = get_charge_id(payments, shipment, item) unless charge_id
+          order_dto[:OrderItemGroupModels].push({
+                                                  StoreOrderItemIds: [spree_order.number + "-" + item.id.to_s],
+                                                  OptionTypeModels: [
+                                                    {
+                                                      StoreOptionTypeId: "StripeChargeId",
+                                                      OptionDetailModels: [
+                                                        {
+                                                          Key: "StripeChargeId",
+                                                          Value: charge_id
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                })
 
         end
       end
 
       return order_dto.to_json
+    end
+
+    def get_charge_id payments, shipment, item
+      cost = item.price + shipment.cost
+      payment = payments.find{|payment| payment.amount == cost}
+      payment.response_code
+    end
+
+    def listing_condition(condition)
+      case condition
+      when 'New'
+        LISTING_CONDITION_ID_NEW
+      when 'Used'
+        LISTING_CONDITION_ID_USED
+      end
     end
 
     def get_delivery_cost(spree_order, order_item)
