@@ -557,7 +557,7 @@ module Marketplace
                                         ShippingType: get_shipping_type(spree_order, item)
                                       })
 
-          charge_id = get_charge_id(payments, shipment, item) unless charge_id
+          charge_id = get_charge_id(spree_order.payments, shipment, item) unless charge_id
           order_dto[:OrderItemGroupModels].push({
                                                   StoreOrderItemIds: [spree_order.number + "-" + item.id.to_s],
                                                   OptionTypeModels: [
