@@ -429,7 +429,7 @@ module Marketplace
 
     def put_bulk_upload(seller_id, csv_filename)
       endpoint_url = "/sellers/#{seller_id}/upload"
-      params = "sellerInterfaceType=Product&apikey=#{@api_key}&accountkey=#{@account_key}"
+      params = "sellerInterfaceType=ProductListings&apikey=#{@api_key}&accountkey=#{@account_key}"
 
       url = "#{@api_base_url}#{@api_version}#{endpoint_url}?#{params}"
       logger.info "Marketplace PUT #{url} #{csv_filename}"
