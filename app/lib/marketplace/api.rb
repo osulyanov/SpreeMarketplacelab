@@ -1,5 +1,5 @@
 require 'httparty'
-require 'net/http'
+require 'net/http/post/multipart'
 require 'uri'
 
 module Marketplace
@@ -435,30 +435,29 @@ module Marketplace
       logger.info "Marketplace PUT #{url} #{csv_filename}"
 
       uri = URI.parse(url)
+      response = nil
 
-      boundary = "AaB03xP9HNb7"
+      File.open(csv_filename) do |csv|
+        headers = {
+          "X-MarketplaceLab-User-Agent-Application-Name" => @appName,
+          "X-MarketplaceLab-User-Agent-Language" => "Ruby #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}",
+          "X-MarketplaceLab-User-Agent-Application-Version" => "master"
+        }
+        payload = { "file"=> UploadIO.new(csv, "text/csv", csv_filename) }
 
-      post_body = []
-      post_body << "--#{boundary}\r\n"
-      post_body << "Content-Disposition: form-data; name='testFile'; filename='#{File.basename(csv_filename)}'\r\n"
-      post_body << "Content-Type: \r\n"
-      post_body << "\r\n"
-      post_body << File.read(csv_filename)
-      post_body << "\r\n--#{boundary}\r\n"
+        req = Net::HTTP::Put::Multipart.new(uri.path, payload, headers)
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = (uri.scheme == 'https')
 
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = (uri.scheme == 'https')
-      request = Net::HTTP::Post.new(uri.request_uri)
-      request.body = post_body.join
-      request["Content-Type"] = "multipart/form-data, boundary=--#{boundary}"
-      request["X-MarketplaceLab-User-Agent-Application-Name"] = @appName
-      request["X-MarketplaceLab-User-Agent-Language"] = "Ruby #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
-      request["X-MarketplaceLab-User-Agent-Application-Version"] = "master"
+        response = http.start do |http|
+          http.request(req)
+        end
+      end
 
       s = ::Stopwatch.new
-      response = http.request(request)
 
       logger.info "Marketplace PUT response code=#{response.code} took #{s.elapsed_time}"
+      logger.info response.body
 
       success = response.code >= "200" && response.code < "300"
 

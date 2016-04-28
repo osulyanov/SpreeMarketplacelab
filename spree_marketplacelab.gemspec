@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'spree_marketplacelab'
-  s.version     = '2.4.8'
+  s.version     = '2.4.9'
   s.summary     = 'Spree extension for Marketplace platform'
   s.description = 'Allows to fetch listings from Marketplace to Spree'
   s.required_ruby_version = '>= 1.9.3'
@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
 
   #s.add_dependency 'spree_core', '~> 2.3.1', '2.4.2.beta'
   s.add_dependency 'httparty', '~> 0.13.1'
+  s.add_dependency 'multipart-post'
 
   s.add_development_dependency 'capybara', '~> 2.1'
   s.add_development_dependency 'coffee-rails'
