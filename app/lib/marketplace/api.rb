@@ -445,7 +445,6 @@ module Marketplace
         }
         payload = { "file"=> UploadIO.new(csv, "text/csv", csv_filename) }
 
-        debugger
         req = Net::HTTP::Put::Multipart.new(uri.request_uri, payload, headers)
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = (uri.scheme == 'https')
