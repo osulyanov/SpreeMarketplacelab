@@ -32,18 +32,33 @@ module Spree
         @result = "ok"
       end
 
+      def product_created
+        marketplace_id = request.POST["MarketplaceId"]
+        marketplace_api = ::Marketplace::Api.instance
+
+        logger.info "Product created hook for marketplace ID: #{marketplace_id}"
+
+        stopwatch = ::Stopwatch.new
+
+        marketplace_api.notify(:product_created, marketplace_id)
+
+        logger.info "Product created hook for marketplace ID: #{marketplace_id} processed, took #{stopwatch.elapsed_time}"
+
+        @result = "ok"
+      end
+
       def listing_created
         listing_id = request.POST["ListingId"]
         product_sku = request.POST["StoreProductId"]
 
-        logger.info "Listing hook for SKU: #{product_sku}"
+        logger.info "Listing created hook for SKU: #{product_sku}"
 
         stopwatch = ::Stopwatch.new
 
         marketplace_api = ::Marketplace::Api.instance
         marketplace_api.notify(:listing_created, listing_id, product_sku)
 
-        logger.info "Listing hook for SKU: #{product_sku} processed, took #{stopwatch.elapsed_time}"
+        logger.info "Listing created hook for SKU: #{product_sku} processed, took #{stopwatch.elapsed_time}"
 
         @result = "ok"
       end
@@ -52,14 +67,14 @@ module Spree
         # listing_id = request.POST["ListingId"]
         product_sku = request.POST["StoreProductId"]
 
-        logger.info "Listing hook for SKU: #{product_sku}"
+        logger.info "Listing updated hook for SKU: #{product_sku}"
 
         stopwatch = ::Stopwatch.new
 
         marketplace_api = ::Marketplace::Api.instance
         marketplace_api.notify(:listing_updated, product_sku)
 
-        logger.info "Listing hook for SKU: #{product_sku} processed, took #{stopwatch.elapsed_time}"
+        logger.info "Listing updated hook for SKU: #{product_sku} processed, took #{stopwatch.elapsed_time}"
 
         @result = "ok"
       end
