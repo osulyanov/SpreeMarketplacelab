@@ -475,8 +475,6 @@ module Marketplace
       subscribe_to :order_awaiting_dispatch
     end
 
-    private
-
     # some marketplacelab constants
     COUNTRY_ID_UK = 235 # country United Kingdom
     LISTING_CONDITION_ID_NEW = 1 # listing condition New
@@ -523,7 +521,8 @@ module Marketplace
       spree_order.shipments.each do |shipment|
         items_in_shipment = shipment.line_items.size
 
-        shipment.line_items.each do |item|
+        shipment.line_items.each_with_index do |item, index|
+          full_delivery_cost = get_delivery_cost(spree_order, item)
           if item.respond_to?(:listing)
             listing = item.listing
           else
@@ -552,7 +551,7 @@ module Marketplace
                                         DeliveryCounty: spree_order.shipping_address.state_name,
                                         DeliveryTown: spree_order.shipping_address.city,
                                         DeliveryPostcode: spree_order.shipping_address.zipcode,
-                                        DeliveryCost: get_delivery_cost(spree_order, item) / items_in_shipment.to_f,
+                                        DeliveryCost: get_delivery_cost_of_one_item(full_delivery_cost, items_in_shipment, index),
                                         ShippingType: get_shipping_type(spree_order, item)
                                       })
 
@@ -591,6 +590,17 @@ module Marketplace
       when 'Used'
         LISTING_CONDITION_ID_USED
       end
+    end
+
+    def get_delivery_cost_of_one_item(full_cost, items_in_shipment, index)
+      # If one item
+      return full_cost if items_in_shipment == 1
+
+      avg_cost = (full_cost.to_f / items_in_shipment.to_f).round(2)
+      cost_except_last =  avg_cost * (items_in_shipment - 1)
+      last_cost = full_cost - cost_except_last
+
+      index == items_in_shipment - 1 ? last_cost : avg_cost
     end
 
     def get_delivery_cost(spree_order, order_item)
