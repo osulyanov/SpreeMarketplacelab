@@ -823,7 +823,7 @@ module Marketplace
         # if value is an Array we iterate over it and change items
         if val.is_a? Array
           val.map! do |item|
-            item = convert_hash_to_ruby_style item if item.is_a? Hash
+            item.is_a?(Hash) ? convert_hash_to_ruby_style(item) : item
           end
         end
 
