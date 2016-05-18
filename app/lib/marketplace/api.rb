@@ -427,9 +427,9 @@ module Marketplace
       get_api_response("/carriers")
     end
 
-    def put_bulk_upload(seller_id, csv_filename)
+    def put_bulk_upload(seller_id, csv_filename, original_filename)
       endpoint_url = "/sellers/#{seller_id}/upload"
-      params = "sellerInterfaceType=ProductListings&apikey=#{@api_key}&accountkey=#{@account_key}"
+      params = "sellerInterfaceType=ProductListings&originalFileName=#{original_filename}&apikey=#{@api_key}&accountkey=#{@account_key}"
 
       url = "#{@api_base_url}#{@api_version}#{endpoint_url}?#{params}"
       logger.info "Marketplace PUT #{url} #{csv_filename}"
