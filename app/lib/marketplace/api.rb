@@ -414,8 +414,8 @@ module Marketplace
 
     # get listings for a product(s)
     # @product_ids comma separated list of product identifiers
-    def get_listings(product_ids)
-      get_api_response("/products/#{product_ids}/listings")
+    def get_listings(product_ids, params="")
+      get_api_response("/products/#{product_ids}/listings", params)
     end
 
     def get_listing(listing_id)
